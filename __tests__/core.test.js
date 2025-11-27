@@ -5,7 +5,7 @@ import {
   pickBestLiteral,
   buildElementTableModel,
   NS
-} from '../app/core.js';
+} from '../docs/app/core.js';
 
 import { Store, DataFactory } from 'n3';
 

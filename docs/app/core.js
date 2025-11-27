@@ -132,19 +132,20 @@ export function getOntologySubjectIri(store) {
   logEvent(fnName, 'start');
 
   try {
-    const candidates = store.getQuads(
-      null,
-      store.createNamedNode(NS.rdf + 'type'),
-      store.createNamedNode(NS.owl + 'Ontology'),
-      null
+    const all = store.getQuads(null, null, null, null);
+    const candidate = all.find(q =>
+      q.predicate.termType === 'NamedNode' &&
+      q.predicate.value === NS.rdf + 'type' &&
+      q.object.termType === 'NamedNode' &&
+      q.object.value === NS.owl + 'Ontology'
     );
 
-    if (candidates.length === 0) {
+    if (!candidate) {
       logEvent(fnName, 'no ontology subject found');
       return null;
     }
 
-    const iri = candidates[0].subject.value;
+    const iri = candidate.subject.value;
     logEvent(fnName, 'ontology subject found', { iri });
     return iri;
   } catch (err) {
@@ -180,6 +181,28 @@ export function pickBestLiteral(literals) {
 }
 
 /**
+ * Get all quads whose subject matches the given IRI string.
+ * @param {import('n3').Store} store
+ * @param {string} subjectIri
+ * @returns {import('n3').Quad[]}
+ */
+export function getQuadsForSubject(store, subjectIri) {
+  const fnName = 'getQuadsForSubject';
+  logEvent(fnName, 'start', { subjectIri });
+
+  try {
+    const all = store.getQuads(null, null, null, null);
+    return all.filter(q =>
+      q.subject.termType === 'NamedNode' &&
+      q.subject.value === subjectIri
+    );
+  } catch (err) {
+    logError(fnName, err, { subjectIri });
+    throw err;
+  }
+}
+
+/**
  * Helper: get single preferred literal value for subject & predicate.
  * @param {import('n3').Store} store
  * @param {string} subjectIri
@@ -191,14 +214,17 @@ export function getPreferredLiteralForPredicates(store, subjectIri, predicateIri
   logEvent(fnName, 'start', { subjectIri });
 
   try {
-    const subj = store.createNamedNode(subjectIri);
+    const subjectQuads = getQuadsForSubject(store, subjectIri);
 
     for (const p of predicateIris) {
-      const pred = store.createNamedNode(p);
-      const quads = store.getQuads(subj, pred, null, null);
-      const literals = quads
-        .map(q => q.object)
-        .filter(o => o.termType === 'Literal');
+      const literals = subjectQuads
+        .filter(q =>
+          q.predicate.termType === 'NamedNode' &&
+          q.predicate.value === p &&
+          q.object.termType === 'Literal'
+        )
+        .map(q => q.object);
+
       const best = pickBestLiteral(literals);
       if (best) return best.value;
     }
@@ -209,6 +235,7 @@ export function getPreferredLiteralForPredicates(store, subjectIri, predicateIri
     throw err;
   }
 }
+
 
 /**
  * Helper: get preferred IRI/URI object for predicates (e.g. versionIRI, license).
@@ -222,14 +249,17 @@ export function getPreferredIriForPredicates(store, subjectIri, predicateIris) {
   logEvent(fnName, 'start', { subjectIri });
 
   try {
-    const subj = store.createNamedNode(subjectIri);
+    const subjectQuads = getQuadsForSubject(store, subjectIri);
 
     for (const p of predicateIris) {
-      const pred = store.createNamedNode(p);
-      const quads = store.getQuads(subj, pred, null, null);
-      const iriObj = quads
-        .map(q => q.object)
-        .find(o => o.termType === 'NamedNode');
+      const iriObj = subjectQuads
+        .filter(q =>
+          q.predicate.termType === 'NamedNode' &&
+          q.predicate.value === p &&
+          q.object.termType === 'NamedNode'
+        )
+        .map(q => q.object)[0];
+
       if (iriObj) return iriObj.value;
     }
 
@@ -326,9 +356,6 @@ export function shouldIncludeElementSubject(store, subject) {
   try {
     if (!subject || subject.termType !== 'NamedNode') return false;
 
-    const typePred = store.createNamedNode(NS.rdf + 'type');
-    const types = store.getQuads(subject, typePred, null, null).map(q => q.object.value);
-
     const interestingTypes = [
       NS.owl + 'Class',
       NS.owl + 'NamedIndividual',
@@ -336,6 +363,16 @@ export function shouldIncludeElementSubject(store, subject) {
       NS.owl + 'DatatypeProperty',
       NS.owl + 'AnnotationProperty'
     ];
+
+    const quadsForSubject = store.getQuads(subject, null, null, null);
+
+    const types = quadsForSubject
+      .filter(q =>
+        q.predicate.termType === 'NamedNode' &&
+        q.predicate.value === NS.rdf + 'type' &&
+        q.object.termType === 'NamedNode'
+      )
+      .map(q => q.object.value);
 
     const include = types.some(t => interestingTypes.includes(t));
     return include;
@@ -422,14 +459,20 @@ export function buildElementTableModel(store) {
     ];
 
     const allQuads = store.getQuads(null, null, null, null);
-    const subjectMap = new Map(); // subject IRI -> Map<pred IRI, string[]>
+    const subjectMap = new Map();        // subject IRI -> Map<pred IRI, string[]>
+    const subjectTermMap = new Map();    // subject IRI -> Term
 
     for (const q of allQuads) {
       if (isBlankNode(q.subject)) continue;
-      if (isBlankNode(q.object)) continue; // skip blank-node objects per your preference
+      if (isBlankNode(q.object)) continue; // skip blank-node objects
 
       const subjIri = q.subject.value;
       const predIri = q.predicate.value;
+
+      // remember the actual subject term
+      if (!subjectTermMap.has(subjIri)) {
+        subjectTermMap.set(subjIri, q.subject);
+      }
 
       let predMap = subjectMap.get(subjIri);
       if (!predMap) {
@@ -458,9 +501,8 @@ export function buildElementTableModel(store) {
       }
     }
 
-    // Filter subjects to ontology elements
-    const elementSubjects = Array.from(subjectMap.keys())
-      .map(iri => store.createNamedNode(iri))
+    // Filter subjects to ontology elements (using the real Term objects)
+    const elementSubjects = Array.from(subjectTermMap.values())
       .filter(subj => shouldIncludeElementSubject(store, subj));
 
     // Collect used predicates (excluding none)
