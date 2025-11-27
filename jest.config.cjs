@@ -2,7 +2,7 @@
 module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/__tests__'],
-  transform: {},
+  transform: {},                 // no Babel, plain JS
   moduleFileExtensions: ['js', 'mjs'],
   testMatch: ['**/*.test.js']
 };
