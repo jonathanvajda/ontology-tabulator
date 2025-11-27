@@ -1,0 +1,15 @@
+{
+  "name": "ontoview",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watchAll",
+    "lint": "echo \"(add eslint here if desired)\"",
+    "audit": "npm audit --audit-level=high"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "n3": "^1.17.4"
+  }
+}

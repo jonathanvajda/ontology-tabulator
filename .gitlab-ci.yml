@@ -1,0 +1,24 @@
+stages:
+  - test
+  - security
+
+variables:
+  NODE_ENV: test
+
+cache:
+  paths:
+    - node_modules/
+
+test:
+  stage: test
+  image: node:20
+  script:
+    - npm install
+    - npm test
+
+dependency_scanning:
+  stage: security
+  image: node:20
+  script:
+    - npm install
+    - npm run audit || true

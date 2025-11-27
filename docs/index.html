@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OntoView – Ontology Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="ontoview-root ontoview-theme-light">
+  <header class="ontoview-header">
+    <h1 class="ontoview-header-title">OntoView</h1>
+    <div class="ontoview-header-actions">
+      <label class="ontoview-file-label">
+        <span>Drop or select ontology files</span>
+        <input
+          id="ontologyFileInput"
+          class="ontoview-file-input"
+          type="file"
+          multiple
+          accept=".ttl,.nt,.nq,.trig,.n3,.owl,.rdf"
+        />
+      </label>
+      <button id="themeToggleBtn" class="ontoview-button">
+        Toggle Theme
+      </button>
+    </div>
+  </header>
+
+  <main class="ontoview-main">
+    <section class="ontoview-filelist-section">
+      <h2 class="ontoview-section-title">Processed Ontologies</h2>
+      <ul id="ontologyFileList" class="ontoview-filelist"></ul>
+    </section>
+
+    <section id="ontologyCardsContainer" class="ontoview-cards-section">
+      <!-- Ontology cards go here -->
+    </section>
+
+    <section id="ontologyTablesContainer" class="ontoview-tables-section">
+      <!-- Ontology data tables go here -->
+    </section>
+  </main>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="ontoview-loading-overlay ontoview-loading-hidden">
+    <div class="ontoview-loading-spinner"></div>
+  </div>
+
+  <!-- Mermaid diagram placeholder (optional, just to keep it handy) -->
+  <section class="ontoview-mermaid-section">
+    <h2 class="ontoview-section-title">Architecture</h2>
+    <pre class="ontoview-mermaid-pre">
+<!-- the actual mermaid code is in the answer below, not embedded here -->
+    </pre>
+  </section>
+
+  <!-- N3 as ES module from CDN -->
+  <script type="module">
+    import * as N3 from 'https://unpkg.com/n3@1.17.4/browser/n3.min.mjs';
+    window.N3 = N3; // expose globally so core.js can import from window.N3 in browser
+  </script>
+
+  <script type="module" src="./app/main.js"></script>
+</body>
+</html>

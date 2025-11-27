@@ -1,0 +1,280 @@
+/* Root themes */
+.ontoview-root {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: #f5f5f5;
+  color: #222;
+}
+
+.ontoview-root.ontoview-theme-dark {
+  background-color: #111;
+  color: #eee;
+}
+
+/* Header */
+.ontoview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #ccc;
+  background: linear-gradient(to right, #f9f9f9, #e9e9e9);
+}
+
+.ontoview-root.ontoview-theme-dark .ontoview-header {
+  background: linear-gradient(to right, #222, #333);
+  border-bottom-color: #444;
+}
+
+.ontoview-header-title {
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.ontoview-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Buttons / inputs */
+.ontoview-button {
+  border-radius: 4px;
+  border: 1px solid #999;
+  padding: 0.4rem 0.75rem;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.ontoview-root.ontoview-theme-dark .ontoview-button {
+  background-color: #333;
+  border-color: #777;
+  color: #eee;
+}
+
+.ontoview-file-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px dashed #aaa;
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.ontoview-root.ontoview-theme-dark .ontoview-file-label {
+  border-color: #666;
+}
+
+.ontoview-file-input {
+  display: none;
+}
+
+/* Main layout */
+.ontoview-main {
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.ontoview-section-title {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+}
+
+/* File list */
+.ontoview-filelist-section {
+  margin-bottom: 1rem;
+}
+
+.ontoview-filelist {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.ontoview-filelist-item {
+  padding: 0.25rem 0;
+}
+
+/* Cards */
+.ontoview-cards-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.ontoview-card {
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  padding: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  font-size: 0.9rem;
+}
+
+.ontoview-root.ontoview-theme-dark .ontoview-card {
+  border-color: #444;
+  background-color: #1b1b1b;
+}
+
+.ontoview-card-title {
+  font-weight: 600;
+  margin: 0 0 0.4rem 0;
+}
+
+.ontoview-card-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.ontoview-card-table-cell-key {
+  font-weight: 600;
+  padding: 0.15rem 0.3rem;
+  vertical-align: top;
+}
+
+.ontoview-card-table-cell-value {
+  padding: 0.15rem 0.3rem;
+  word-break: break-all;
+}
+
+/* Tables */
+.ontoview-tables-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.ontoview-table-wrapper {
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  padding: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.ontoview-root.ontoview-theme-dark .ontoview-table-wrapper {
+  border-color: #444;
+  background-color: #1b1b1b;
+}
+
+.ontoview-table-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  gap: 0.75rem;
+}
+
+.ontoview-table-title {
+  font-weight: 600;
+  margin: 0;
+}
+
+.ontoview-table-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.ontoview-table-filter-input {
+  border-radius: 4px;
+  border: 1px solid #aaa;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.85rem;
+}
+
+.ontoview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  table-layout: fixed;
+}
+
+.ontoview-table thead {
+  position: sticky;
+  top: 0;
+  background-color: #f4f4f4;
+}
+
+.ontoview-root.ontoview-theme-dark .ontoview-table thead {
+  background-color: #252525;
+}
+
+.ontoview-table-header-cell,
+.ontoview-table-data-cell {
+  border: 1px solid #ddd;
+  padding: 0.2rem 0.3rem;
+  vertical-align: top;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.ontoview-root.ontoview-theme-dark .ontoview-table-header-cell,
+.ontoview-root.ontoview-theme-dark .ontoview-table-data-cell {
+  border-color: #444;
+}
+
+.ontoview-table-header-cell {
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ontoview-table-header-cell-sortable::after {
+  content: " ⇅";
+  font-size: 0.7em;
+}
+
+/* Loading overlay */
+.ontoview-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.ontoview-loading-hidden {
+  display: none;
+}
+
+.ontoview-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 4px solid #ccc;
+  border-top-color: #777;
+  animation: ontoview-spin 0.9s linear infinite;
+}
+
+@keyframes ontoview-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Mermaid section */
+.ontoview-mermaid-section {
+  max-width: 1200px;
+  margin: 1rem auto;
+  padding: 0.75rem 1rem 1.5rem;
+}
+
+.ontoview-mermaid-pre {
+  font-size: 0.8rem;
+  background-color: #fafafa;
+  border-radius: 4px;
+  padding: 0.75rem;
+  overflow-x: auto;
+}
+
+.ontoview-root.ontoview-theme-dark .ontoview-mermaid-pre {
+  background-color: #181818;
+}
