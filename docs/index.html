@@ -2,54 +2,54 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>OntoView – Ontology Viewer</title>
+  <title>Ontology Tabulator – Ontology Viewer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
-<body class="ontoview-root ontoview-theme-light">
-  <header class="ontoview-header">
-    <h1 class="ontoview-header-title">OntoView</h1>
-    <div class="ontoview-header-actions">
-      <label class="ontoview-file-label">
+<body class="ontology-tabulator-root ontology-tabulator-theme-light">
+  <header class="ontology-tabulator-header">
+    <h1 class="ontology-tabulator-header-title">ontology-tabulator</h1>
+    <div class="ontology-tabulator-header-actions">
+      <label class="ontology-tabulator-file-label">
         <span>Drop or select ontology files</span>
         <input
           id="ontologyFileInput"
-          class="ontoview-file-input"
+          class="ontology-tabulator-file-input"
           type="file"
           multiple
           accept=".ttl,.nt,.nq,.trig,.n3,.owl,.rdf"
         />
       </label>
-      <button id="themeToggleBtn" class="ontoview-button">
+      <button id="themeToggleBtn" class="ontology-tabulator-button">
         Toggle Theme
       </button>
     </div>
   </header>
 
-  <main class="ontoview-main">
-    <section class="ontoview-filelist-section">
-      <h2 class="ontoview-section-title">Processed Ontologies</h2>
-      <ul id="ontologyFileList" class="ontoview-filelist"></ul>
+  <main class="ontology-tabulator-main">
+    <section class="ontology-tabulator-filelist-section">
+      <h2 class="ontology-tabulator-section-title">Processed Ontologies</h2>
+      <ul id="ontologyFileList" class="ontology-tabulator-filelist"></ul>
     </section>
 
-    <section id="ontologyCardsContainer" class="ontoview-cards-section">
+    <section id="ontologyCardsContainer" class="ontology-tabulator-cards-section">
       <!-- Ontology cards go here -->
     </section>
 
-    <section id="ontologyTablesContainer" class="ontoview-tables-section">
+    <section id="ontologyTablesContainer" class="ontology-tabulator-tables-section">
       <!-- Ontology data tables go here -->
     </section>
   </main>
 
   <!-- Loading overlay -->
-  <div id="loadingOverlay" class="ontoview-loading-overlay ontoview-loading-hidden">
-    <div class="ontoview-loading-spinner"></div>
+  <div id="loadingOverlay" class="ontology-tabulator-loading-overlay ontology-tabulator-loading-hidden">
+    <div class="ontology-tabulator-loading-spinner"></div>
   </div>
 
   <!-- Mermaid diagram placeholder (optional, just to keep it handy) -->
-  <section class="ontoview-mermaid-section">
-    <h2 class="ontoview-section-title">Architecture</h2>
-    <pre class="ontoview-mermaid-pre">
+  <section class="ontology-tabulator-mermaid-section">
+    <h2 class="ontology-tabulator-section-title">Architecture</h2>
+    <pre class="ontology-tabulator-mermaid-pre">
 <!-- the actual mermaid code is in the answer below, not embedded here -->
     </pre>
   </section>

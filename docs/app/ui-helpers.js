@@ -3,22 +3,22 @@ import { filterAndSortRows, toPascalCase } from './core.js';
 
 export function showLoadingOverlay() {
   const el = document.getElementById('loadingOverlay');
-  if (el) el.classList.remove('ontoview-loading-hidden');
+  if (el) el.classList.remove('ontology-tabulator-loading-hidden');
 }
 
 export function hideLoadingOverlay() {
   const el = document.getElementById('loadingOverlay');
-  if (el) el.classList.add('ontoview-loading-hidden');
+  if (el) el.classList.add('ontology-tabulator-loading-hidden');
 }
 
 export function toggleTheme() {
   const body = document.body;
-  if (!body.classList.contains('ontoview-theme-dark')) {
-    body.classList.add('ontoview-theme-dark');
-    body.classList.remove('ontoview-theme-light');
+  if (!body.classList.contains('ontology-tabulator-theme-dark')) {
+    body.classList.add('ontology-tabulator-theme-dark');
+    body.classList.remove('ontology-tabulator-theme-light');
   } else {
-    body.classList.add('ontoview-theme-light');
-    body.classList.remove('ontoview-theme-dark');
+    body.classList.add('ontology-tabulator-theme-light');
+    body.classList.remove('ontology-tabulator-theme-dark');
   }
 }
 
@@ -29,7 +29,7 @@ export function renderFileList(fileInfos) {
 
   fileInfos.forEach(info => {
     const li = document.createElement('li');
-    li.className = 'ontoview-filelist-item';
+    li.className = 'ontology-tabulator-filelist-item';
     li.textContent = `${info.displayName} (${info.quadCount} triples)`;
     ul.appendChild(li);
   });
@@ -49,15 +49,15 @@ export function createLinkIfUri(value) {
 
 export function renderOntologyCard(container, metadata) {
   const card = document.createElement('article');
-  card.className = 'ontoview-card';
+  card.className = 'ontology-tabulator-card';
 
   const title = document.createElement('h3');
-  title.className = 'ontoview-card-title';
+  title.className = 'ontology-tabulator-card-title';
   title.textContent = metadata.ontologyName || metadata.ontologyIri || 'Unnamed Ontology';
   card.appendChild(title);
 
   const table = document.createElement('table');
-  table.className = 'ontoview-card-table';
+  table.className = 'ontology-tabulator-card-table';
 
   const fields = [
     ['Ontology Name', metadata.ontologyName],
@@ -74,11 +74,11 @@ export function renderOntologyCard(container, metadata) {
     const tr = document.createElement('tr');
 
     const tdKey = document.createElement('td');
-    tdKey.className = 'ontoview-card-table-cell-key';
+    tdKey.className = 'ontology-tabulator-card-table-cell-key';
     tdKey.textContent = `${label}:`;
 
     const tdVal = document.createElement('td');
-    tdVal.className = 'ontoview-card-table-cell-value';
+    tdVal.className = 'ontology-tabulator-card-table-cell-value';
     tdVal.innerHTML = String(value);
 
     tr.appendChild(tdKey);
@@ -92,30 +92,30 @@ export function renderOntologyCard(container, metadata) {
 
 export function renderOntologyTable(container, ontologyMeta, tableModel) {
   const wrapper = document.createElement('section');
-  wrapper.className = 'ontoview-table-wrapper';
+  wrapper.className = 'ontology-tabulator-table-wrapper';
 
   const headerRow = document.createElement('div');
-  headerRow.className = 'ontoview-table-header-row';
+  headerRow.className = 'ontology-tabulator-table-header-row';
 
   const title = document.createElement('h3');
-  title.className = 'ontoview-table-title';
+  title.className = 'ontology-tabulator-table-title';
   title.textContent = (ontologyMeta.ontologyName || ontologyMeta.ontologyIri || 'Ontology Elements');
   headerRow.appendChild(title);
 
   const actions = document.createElement('div');
-  actions.className = 'ontoview-table-actions';
+  actions.className = 'ontology-tabulator-table-actions';
 
   const filterInput = document.createElement('input');
   filterInput.type = 'search';
   filterInput.placeholder = 'Filter...';
-  filterInput.className = 'ontoview-table-filter-input';
+  filterInput.className = 'ontology-tabulator-table-filter-input';
 
   const exportBtn = document.createElement('button');
-  exportBtn.className = 'ontoview-button';
+  exportBtn.className = 'ontology-tabulator-button';
   exportBtn.textContent = 'Export CSV';
 
   const printBtn = document.createElement('button');
-  printBtn.className = 'ontoview-button';
+  printBtn.className = 'ontology-tabulator-button';
   printBtn.textContent = 'Print';
 
   actions.appendChild(filterInput);
@@ -126,14 +126,14 @@ export function renderOntologyTable(container, ontologyMeta, tableModel) {
   wrapper.appendChild(headerRow);
 
   const table = document.createElement('table');
-  table.className = 'ontoview-table';
+  table.className = 'ontology-tabulator-table';
 
   const thead = document.createElement('thead');
   const headRow = document.createElement('tr');
 
   tableModel.headers.forEach((h, idx) => {
     const th = document.createElement('th');
-    th.className = 'ontoview-table-header-cell ontoview-table-header-cell-sortable';
+    th.className = 'ontology-tabulator-table-header-cell ontology-tabulator-table-header-cell-sortable';
     th.textContent = h;
     th.dataset.sortIndex = String(idx);
     th.dataset.colKey = tableModel.keys[idx];   // NEW
@@ -161,7 +161,7 @@ export function renderOntologyTable(container, ontologyMeta, tableModel) {
       const tr = document.createElement('tr');
       tableModel.headers.forEach((h, i) => {
         const td = document.createElement('td');
-        td.className = 'ontoview-table-data-cell';
+        td.className = 'ontology-tabulator-table-data-cell';
 
         const key = tableModel.keys[i];
         td.dataset.colKey = key;                    // NEW
