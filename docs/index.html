@@ -4,7 +4,11 @@
   <meta charset="UTF-8" />
   <title>Ontology Tabulator – Ontology Viewer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./styles/normalize.css" />
+  <link rel="stylesheet" href="./styles/skeleton.css" />
+  <link rel="stylesheet" href="./styles/app-base.css" />
+  <link rel="stylesheet" href="./styles/site-header.css" />
+  <link rel="stylesheet" href="./styles/ontology-tabulator.css" />
 </head>
 <body class="ontology-tabulator-root ontology-tabulator-theme-light">
   <header class="ontology-tabulator-header">
@@ -50,6 +54,7 @@
   <script type="module" src="./app/n3.min.js">
     window.N3 = N3; // expose globally so core.js can import from window.N3 in browser
   </script>
+  <script src="./app/site-header.js"></script>
 
   <script type="module" src="./app/main.js"></script>
 </body>
