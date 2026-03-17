@@ -62,7 +62,7 @@ export function renderOntologyCard(container, metadata) {
   const fields = [
     ['Ontology Name', metadata.ontologyName],
     ['Ontology IRI', createLinkIfUri(metadata.ontologyIri)],
-    ['Version IRI', metadata.versionIri],
+    ['Version IRI', createLinkIfUri(metadata.versionIri)],
     ['Version Info', metadata.versionInfo],
     ['Description', metadata.description],
     ['License', metadata.license],

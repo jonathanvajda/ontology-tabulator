@@ -64,6 +64,18 @@ describe('pickBestLiteral', () => {
   });
 });
 
+test('extractOntologyMetadata reads owl:versionIRI as an IRI', () => {
+  const store = new Store();
+  const ont = namedNode('http://example.org/ont');
+  const ver = namedNode('http://example.org/ont/1.0.0');
+
+  store.addQuad(quad(ont, namedNode(NS.rdf + 'type'), namedNode(NS.owl + 'Ontology')));
+  store.addQuad(quad(ont, namedNode(NS.owl + 'versionIRI'), ver));
+
+  const meta = extractOntologyMetadata(store);
+  expect(meta.versionIri).toBe(ver.value);
+});
+
 describe('buildElementTableModel (fixed columns)', () => {
   test('builds model with fixed headers and mapped data', () => {
     const store = new Store();

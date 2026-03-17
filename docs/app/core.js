@@ -410,10 +410,14 @@ export function extractOntologyMetadata(store) {
         NS.dcterms + 'title',
         NS.dc + 'title'
       ]),
-      versionIri: getPreferredLiteralForPredicates(store, S, [
-        NS.owl + 'versionIRI',
-        NS.dcterms + 'hasVersion'
-      ]),
+      versionIri:
+        getPreferredIriForPredicates(store, S, [
+          NS.owl + 'versionIRI',
+          NS.dcterms + 'hasVersion'
+        ]) ||
+        getPreferredLiteralForPredicates(store, S, [
+          NS.dcterms + 'hasVersion'
+        ]),
       versionInfo: getPreferredLiteralForPredicates(store, S, [
         NS.owl + 'versionInfo',
         NS.dcterms + 'hasVersion'
@@ -435,7 +439,6 @@ export function extractOntologyMetadata(store) {
         NS.dcterms + 'rightsHolder'
       ])
     };
-
     logEvent(fnName, 'metadata extracted', meta);
     return meta;
   } catch (err) {
