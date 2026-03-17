@@ -101,7 +101,7 @@ describe('buildElementTableModel (fixed columns)', () => {
     store.addQuad(quad(cls, namedNode(NS.dcterms + 'bibliographicCitation'), literal('Smith 2020', 'en')));
 
     // is curated in: cco2:ont00001760 > rdfs:isDefinedBy
-    store.addQuad(quad(cls, namedNode(NS.cco2 + 'ont00001760'), literal(curatedInOnt, 'en')));
+    store.addQuad(quad(cls, namedNode(NS.cco2 + 'ont00001760'), literal('http://example.org/ExampleOntology', 'en')));
 
     const model = buildElementTableModel(store);
 
