@@ -314,6 +314,42 @@ export function getPreferredUriLikeForPredicates(store, subjectIri, predicateIri
 }
 
 /**
+ * Helper: get preferred displayable value for predicates.
+ * Accepts either:
+ *  - NamedNode IRIs
+ *  - Literal values (including xsd:anyURI or plain strings)
+ * Returns the first matching value in predicate preference order.
+ *
+ * @param {import('n3').Store} store
+ * @param {string} subjectIri
+ * @param {string[]} predicateIris
+ * @returns {string|null}
+ */
+export function getPreferredDisplayValueForPredicates(store, subjectIri, predicateIris) {
+  const fnName = 'getPreferredDisplayValueForPredicates';
+  logEvent(fnName, 'start', { subjectIri });
+
+  try {
+    const subjectQuads = getQuadsForSubject(store, subjectIri);
+
+    for (const p of predicateIris) {
+      const match = subjectQuads.find(q =>
+        q.predicate.termType === 'NamedNode' &&
+        q.predicate.value === p &&
+        (q.object.termType === 'NamedNode' || q.object.termType === 'Literal')
+      );
+
+      if (match) return match.object.value;
+    }
+
+    return null;
+  } catch (err) {
+    logError(fnName, err, { subjectIri, predicateIris });
+    throw err;
+  }
+}
+
+/**
  * Get all literal values for any of the given predicates.
  * @param {import('n3').Store} store
  * @param {string} subjectIri
@@ -450,14 +486,10 @@ export function extractOntologyMetadata(store) {
         NS.dcterms + 'title',
         NS.dc + 'title'
       ]),
-      versionIri:
-        getPreferredUriLikeForPredicates(store, S, [
-          NS.owl + 'versionIRI',
-          NS.dcterms + 'hasVersion'
-        ]) ||
-        getPreferredLiteralForPredicates(store, S, [
-          NS.dcterms + 'hasVersion'
-        ]),
+      versionIri: getPreferredDisplayValueForPredicates(store, S, [
+        NS.owl + 'versionIRI',
+        NS.dcterms + 'hasVersion'
+      ]),
       versionInfo: getPreferredLiteralForPredicates(store, S, [
         NS.owl + 'versionInfo',
         NS.dcterms + 'hasVersion'

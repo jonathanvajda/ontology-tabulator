@@ -77,6 +77,17 @@ test('extractOntologyMetadata reads owl:versionIRI as an IRI', () => {
   expect(meta.versionIri).toBe(ver.value);
 });
 
+test('extractOntologyMetadata accepts owl:versionIRI as a plain literal', () => {
+  const store = new Store();
+  const ont = namedNode('http://example.org/ont');
+
+  store.addQuad(quad(ont, namedNode(NS.rdf + 'type'), namedNode(NS.owl + 'Ontology')));
+  store.addQuad(quad(ont, namedNode(NS.owl + 'versionIRI'), literal('https://example.org/ont/1.0.0')));
+
+  const meta = extractOntologyMetadata(store);
+  expect(meta.versionIri).toBe('https://example.org/ont/1.0.0');
+});
+
 describe('buildElementTableModel (fixed columns)', () => {
   test('builds model with fixed headers and mapped data', () => {
     const store = new Store();
