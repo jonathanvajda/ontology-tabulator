@@ -463,6 +463,7 @@ export function shouldIncludeElementSubject(store, subject) {
       NS.owl + 'Class',
       NS.owl + 'NamedIndividual',
       NS.owl + 'ObjectProperty',
+      NS.owl + 'DataProperty',
       NS.owl + 'DatatypeProperty',
       NS.owl + 'AnnotationProperty'
     ];
@@ -626,6 +627,7 @@ export function buildElementTableModel(store) {
 
       const definitionSourceArr = getAnyArrayForPredicates(store, iri, [
         NS.dcterms + 'bibliographicCitation',
+        NS.dc + 'bibliographicCitation',
         NS.obo + 'IAO_0000119',
         NS.cco2 + 'ont00001754',
         NS.cco + 'definition_source',
@@ -633,7 +635,7 @@ export function buildElementTableModel(store) {
         NS.cco + 'doctrinal_source'
       ]);
 
-      const isCuratedIn = getPreferredIriForPredicates(store, iri, [
+      const isCuratedIn = getLiteralArrayForPredicates(store, iri, [
         NS.cco2 + 'ont00001760',
         NS.rdfs + 'isDefinedBy'
       ]);
