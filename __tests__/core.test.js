@@ -141,7 +141,7 @@ describe('buildElementTableModel (fixed columns)', () => {
     expect(row.definitionSource).toContain('Smith 2020');
 
     // Updated expectation: current implementation returns an array here
-    expect(row.isCuratedIn).toEqual([curatedInOnt.value]);
+    expect(row.isCuratedIn).toBe(curatedInOnt.value);
   });
 });
 
