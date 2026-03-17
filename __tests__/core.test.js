@@ -6,7 +6,8 @@ import {
   pickBestLiteral,
   buildElementTableModel,
   filterAndSortRows,
-  NS
+  NS,
+  extractOntologyMetadata
 } from '../docs/app/core.js';
 
 import { Store, DataFactory } from 'n3';
