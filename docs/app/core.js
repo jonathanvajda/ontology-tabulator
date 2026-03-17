@@ -273,6 +273,46 @@ export function getPreferredIriForPredicates(store, subjectIri, predicateIris) {
   }
 }
 
+export function getPreferredUriLikeForPredicates(store, subjectIri, predicateIris) {
+  const fnName = 'getPreferredUriLikeForPredicates';
+  logEvent(fnName, 'start', { subjectIri });
+
+  try {
+    const subjectQuads = getQuadsForSubject(store, subjectIri);
+
+    for (const p of predicateIris) {
+      const match = subjectQuads.find(q => {
+        if (q.predicate.termType !== 'NamedNode' || q.predicate.value !== p) {
+          return false;
+        }
+
+        // Normal case: actual IRI node
+        if (q.object.termType === 'NamedNode') {
+          return true;
+        }
+
+        // Permissive case: typed URI literal
+        if (
+          q.object.termType === 'Literal' &&
+          q.object.datatype &&
+          q.object.datatype.value === 'http://www.w3.org/2001/XMLSchema#anyURI'
+        ) {
+          return true;
+        }
+
+        return false;
+      });
+
+      if (match) return match.object.value;
+    }
+
+    return null;
+  } catch (err) {
+    logError(fnName, err, { subjectIri, predicateIris });
+    throw err;
+  }
+}
+
 /**
  * Get all literal values for any of the given predicates.
  * @param {import('n3').Store} store
@@ -411,7 +451,7 @@ export function extractOntologyMetadata(store) {
         NS.dc + 'title'
       ]),
       versionIri:
-        getPreferredIriForPredicates(store, S, [
+        getPreferredUriLikeForPredicates(store, S, [
           NS.owl + 'versionIRI',
           NS.dcterms + 'hasVersion'
         ]) ||
