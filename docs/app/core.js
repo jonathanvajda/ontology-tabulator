@@ -635,7 +635,7 @@ export function buildElementTableModel(store) {
         NS.cco + 'doctrinal_source'
       ]);
 
-      const isCuratedIn = getLiteralArrayForPredicates(store, iri, [
+      const isCuratedInArr = getLiteralArrayForPredicates(store, iri, [
         NS.cco2 + 'ont00001760',
         NS.rdfs + 'isDefinedBy'
       ]);
@@ -651,7 +651,7 @@ export function buildElementTableModel(store) {
         subClassOf: subClassOfArr.join('; '),
         subPropertyOf: subPropertyOfArr.join('; '),
         definitionSource: definitionSourceArr.join('; '),
-        isCuratedIn: isCuratedIn.join('; ')
+        isCuratedIn: isCuratedInArr.join('; ')
       };
 
       rows.push(row);
