@@ -410,7 +410,7 @@ export function extractOntologyMetadata(store) {
         NS.dcterms + 'title',
         NS.dc + 'title'
       ]),
-      versionIri: getPreferredIriForPredicates(store, S, [
+      versionIri: getPreferredLiteralForPredicates(store, S, [
         NS.owl + 'versionIRI',
         NS.dcterms + 'hasVersion'
       ]),
@@ -423,13 +423,15 @@ export function extractOntologyMetadata(store) {
         NS.dcterms + 'description',
         NS.dc + 'description'
       ]),
-      license: getPreferredIriForPredicates(store, S, [
+      license: getPreferredLiteralForPredicates(store, S, [
+        NS.dc + 'rights',
+        NS.dc + 'accessRights',
         NS.dcterms + 'license',
         NS.dcterms + 'rights',
-        NS.dc + 'rights',
         NS.dcterms + 'accessRights'
       ]),
       rightsHolder: getPreferredLiteralForPredicates(store, S, [
+        NS.dc + 'rightsHolder',
         NS.dcterms + 'rightsHolder'
       ])
     };
