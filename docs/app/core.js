@@ -651,7 +651,7 @@ export function buildElementTableModel(store) {
         subClassOf: subClassOfArr.join('; '),
         subPropertyOf: subPropertyOfArr.join('; '),
         definitionSource: definitionSourceArr.join('; '),
-        isCuratedIn: isCuratedIn || ''
+        isCuratedIn: isCuratedIn.join('; ')
       };
 
       rows.push(row);
