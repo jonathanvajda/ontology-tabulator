@@ -98,22 +98,10 @@ describe('buildElementTableModel (fixed columns)', () => {
     store.addQuad(quad(cls, namedNode(NS.rdfs + 'subClassOf'), parentCls));
 
     // definition source: use dcterms:bibliographicCitation so “definition source” column is present
-    store.addQuad(
-      quad(
-        cls,
-        namedNode(NS.dcterms + 'bibliographicCitation'),
-        literal('Smith 2020', 'en')
-      )
-    );
+    store.addQuad(quad(cls, namedNode(NS.dcterms + 'bibliographicCitation'), literal('Smith 2020', 'en')));
 
     // is curated in: cco2:ont00001760 > rdfs:isDefinedBy
-    store.addQuad(
-      quad(
-        cls,
-        namedNode(NS.cco2 + 'ont00001760'),
-        curatedInOnt
-      )
-    );
+    store.addQuad(quad(cls, namedNode(NS.cco2 + 'ont00001760'), literal(curatedInOnt, 'en')));
 
     const model = buildElementTableModel(store);
 
