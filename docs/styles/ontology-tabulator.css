@@ -181,7 +181,6 @@
 
 .ontology-tabulator-card-table-cell-value {
   padding: 0.15rem 0.3rem;
-  word-break: break-all;
   color: var(--ont-text);
 }
 

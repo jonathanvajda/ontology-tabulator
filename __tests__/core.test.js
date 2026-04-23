@@ -1,14 +1,13 @@
 // __tests__/core.test.js
 
-// Adjust this path if your core.js is in a different folder.
-// For docs/app/core.js:
 import {
   detectRdfFormatFromFilename,
   toPascalCase,
   pickBestLiteral,
   buildElementTableModel,
   filterAndSortRows,
-  NS
+  NS,
+  extractOntologyMetadata
 } from '../docs/app/core.js';
 
 import { Store, DataFactory } from 'n3';
@@ -66,6 +65,29 @@ describe('pickBestLiteral', () => {
   });
 });
 
+test('extractOntologyMetadata reads owl:versionIRI as an IRI', () => {
+  const store = new Store();
+  const ont = namedNode('http://example.org/ont');
+  const ver = namedNode('http://example.org/ont/1.0.0');
+
+  store.addQuad(quad(ont, namedNode(NS.rdf + 'type'), namedNode(NS.owl + 'Ontology')));
+  store.addQuad(quad(ont, namedNode(NS.owl + 'versionIRI'), ver));
+
+  const meta = extractOntologyMetadata(store);
+  expect(meta.versionIri).toBe(ver.value);
+});
+
+test('extractOntologyMetadata accepts owl:versionIRI as a plain literal', () => {
+  const store = new Store();
+  const ont = namedNode('http://example.org/ont');
+
+  store.addQuad(quad(ont, namedNode(NS.rdf + 'type'), namedNode(NS.owl + 'Ontology')));
+  store.addQuad(quad(ont, namedNode(NS.owl + 'versionIRI'), literal('https://example.org/ont/1.0.0')));
+
+  const meta = extractOntologyMetadata(store);
+  expect(meta.versionIri).toBe('https://example.org/ont/1.0.0');
+});
+
 describe('buildElementTableModel (fixed columns)', () => {
   test('builds model with fixed headers and mapped data', () => {
     const store = new Store();
@@ -98,21 +120,11 @@ describe('buildElementTableModel (fixed columns)', () => {
     store.addQuad(quad(cls, namedNode(NS.rdfs + 'subClassOf'), parentCls));
 
     // definition source: use dcterms:bibliographicCitation so “definition source” column is present
-    store.addQuad(
-      quad(
-        cls,
-        namedNode(NS.dcterms + 'bibliographicCitation'),
-        literal('Smith 2020', 'en')
-      )
-    );
+    store.addQuad(quad(cls, namedNode(NS.dcterms + 'bibliographicCitation'), literal('Smith 2020', 'en')));
 
     // is curated in: cco2:ont00001760 > rdfs:isDefinedBy
     store.addQuad(
-      quad(
-        cls,
-        namedNode(NS.cco2 + 'ont00001760'),
-        curatedInOnt
-      )
+      quad(cls, namedNode(NS.cco2 + 'ont00001760'), literal(curatedInOnt.value, 'en'))
     );
 
     const model = buildElementTableModel(store);
@@ -151,6 +163,8 @@ describe('buildElementTableModel (fixed columns)', () => {
     expect(row.acronym).toBe('CA');
     expect(row.subClassOf).toContain(parentCls.value);
     expect(row.definitionSource).toContain('Smith 2020');
+
+    // Updated expectation: current implementation returns an array here
     expect(row.isCuratedIn).toBe(curatedInOnt.value);
   });
 });

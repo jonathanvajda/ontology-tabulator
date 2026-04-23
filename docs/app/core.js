@@ -273,6 +273,82 @@ export function getPreferredIriForPredicates(store, subjectIri, predicateIris) {
   }
 }
 
+export function getPreferredUriLikeForPredicates(store, subjectIri, predicateIris) {
+  const fnName = 'getPreferredUriLikeForPredicates';
+  logEvent(fnName, 'start', { subjectIri });
+
+  try {
+    const subjectQuads = getQuadsForSubject(store, subjectIri);
+
+    for (const p of predicateIris) {
+      const match = subjectQuads.find(q => {
+        if (q.predicate.termType !== 'NamedNode' || q.predicate.value !== p) {
+          return false;
+        }
+
+        // Normal case: actual IRI node
+        if (q.object.termType === 'NamedNode') {
+          return true;
+        }
+
+        // Permissive case: typed URI literal
+        if (
+          q.object.termType === 'Literal' &&
+          q.object.datatype &&
+          q.object.datatype.value === 'http://www.w3.org/2001/XMLSchema#anyURI'
+        ) {
+          return true;
+        }
+
+        return false;
+      });
+
+      if (match) return match.object.value;
+    }
+
+    return null;
+  } catch (err) {
+    logError(fnName, err, { subjectIri, predicateIris });
+    throw err;
+  }
+}
+
+/**
+ * Helper: get preferred displayable value for predicates.
+ * Accepts either:
+ *  - NamedNode IRIs
+ *  - Literal values (including xsd:anyURI or plain strings)
+ * Returns the first matching value in predicate preference order.
+ *
+ * @param {import('n3').Store} store
+ * @param {string} subjectIri
+ * @param {string[]} predicateIris
+ * @returns {string|null}
+ */
+export function getPreferredDisplayValueForPredicates(store, subjectIri, predicateIris) {
+  const fnName = 'getPreferredDisplayValueForPredicates';
+  logEvent(fnName, 'start', { subjectIri });
+
+  try {
+    const subjectQuads = getQuadsForSubject(store, subjectIri);
+
+    for (const p of predicateIris) {
+      const match = subjectQuads.find(q =>
+        q.predicate.termType === 'NamedNode' &&
+        q.predicate.value === p &&
+        (q.object.termType === 'NamedNode' || q.object.termType === 'Literal')
+      );
+
+      if (match) return match.object.value;
+    }
+
+    return null;
+  } catch (err) {
+    logError(fnName, err, { subjectIri, predicateIris });
+    throw err;
+  }
+}
+
 /**
  * Get all literal values for any of the given predicates.
  * @param {import('n3').Store} store
@@ -410,7 +486,7 @@ export function extractOntologyMetadata(store) {
         NS.dcterms + 'title',
         NS.dc + 'title'
       ]),
-      versionIri: getPreferredIriForPredicates(store, S, [
+      versionIri: getPreferredDisplayValueForPredicates(store, S, [
         NS.owl + 'versionIRI',
         NS.dcterms + 'hasVersion'
       ]),
@@ -423,17 +499,18 @@ export function extractOntologyMetadata(store) {
         NS.dcterms + 'description',
         NS.dc + 'description'
       ]),
-      license: getPreferredIriForPredicates(store, S, [
+      license: getPreferredLiteralForPredicates(store, S, [
+        NS.dc + 'rights',
+        NS.dc + 'accessRights',
         NS.dcterms + 'license',
         NS.dcterms + 'rights',
-        NS.dc + 'rights',
         NS.dcterms + 'accessRights'
       ]),
       rightsHolder: getPreferredLiteralForPredicates(store, S, [
+        NS.dc + 'rightsHolder',
         NS.dcterms + 'rightsHolder'
       ])
     };
-
     logEvent(fnName, 'metadata extracted', meta);
     return meta;
   } catch (err) {
@@ -461,6 +538,7 @@ export function shouldIncludeElementSubject(store, subject) {
       NS.owl + 'Class',
       NS.owl + 'NamedIndividual',
       NS.owl + 'ObjectProperty',
+      NS.owl + 'DataProperty',
       NS.owl + 'DatatypeProperty',
       NS.owl + 'AnnotationProperty'
     ];
@@ -624,6 +702,7 @@ export function buildElementTableModel(store) {
 
       const definitionSourceArr = getAnyArrayForPredicates(store, iri, [
         NS.dcterms + 'bibliographicCitation',
+        NS.dc + 'bibliographicCitation',
         NS.obo + 'IAO_0000119',
         NS.cco2 + 'ont00001754',
         NS.cco + 'definition_source',
@@ -631,7 +710,7 @@ export function buildElementTableModel(store) {
         NS.cco + 'doctrinal_source'
       ]);
 
-      const isCuratedIn = getPreferredIriForPredicates(store, iri, [
+      const isCuratedInArr = getLiteralArrayForPredicates(store, iri, [
         NS.cco2 + 'ont00001760',
         NS.rdfs + 'isDefinedBy'
       ]);
@@ -647,7 +726,7 @@ export function buildElementTableModel(store) {
         subClassOf: subClassOfArr.join('; '),
         subPropertyOf: subPropertyOfArr.join('; '),
         definitionSource: definitionSourceArr.join('; '),
-        isCuratedIn: isCuratedIn || ''
+        isCuratedIn: isCuratedInArr.join('; ')
       };
 
       rows.push(row);

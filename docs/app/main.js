@@ -11,20 +11,10 @@ import {
 import {
   showLoadingOverlay,
   hideLoadingOverlay,
-  toggleTheme,
   renderFileList,
   renderOntologyCard,
   renderOntologyTable
 } from './ui-helpers.js';
-
-function setupThemeToggle() {
-  const btn = document.getElementById('themeToggleBtn');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    logEvent('themeToggleHandler', 'click');
-    toggleTheme();
-  });
-}
 
 function handleFilesSelected(files) {
   const fnName = 'handleFilesSelected';
@@ -97,7 +87,6 @@ function setupFileInput() {
 
 function initApp() {
   logEvent('initApp', 'start');
-  setupThemeToggle();
   setupFileInput();
 }
 

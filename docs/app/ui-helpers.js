@@ -11,17 +11,6 @@ export function hideLoadingOverlay() {
   if (el) el.classList.add('ontology-tabulator-loading-hidden');
 }
 
-export function toggleTheme() {
-  const body = document.body;
-  if (!body.classList.contains('ontology-tabulator-theme-dark')) {
-    body.classList.add('ontology-tabulator-theme-dark');
-    body.classList.remove('ontology-tabulator-theme-light');
-  } else {
-    body.classList.add('ontology-tabulator-theme-light');
-    body.classList.remove('ontology-tabulator-theme-dark');
-  }
-}
-
 export function renderFileList(fileInfos) {
   const ul = document.getElementById('ontologyFileList');
   if (!ul) return;
@@ -33,6 +22,155 @@ export function renderFileList(fileInfos) {
     li.textContent = `${info.displayName} (${info.quadCount} triples)`;
     ul.appendChild(li);
   });
+}
+
+export function printTableOnly(titleText, tableElement) {
+  if (!tableElement) return;
+
+  const printWindow = window.open('', '_blank', 'width=1200,height=800');
+  if (!printWindow) return;
+
+  const safeTitle = String(titleText || 'Ontology Table');
+
+  printWindow.document.open();
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>${safeTitle}</title>
+      <style>
+        @page {
+          size: landscape;
+          margin: 0.5in;
+        }
+
+        html, body {
+          margin: 0;
+          padding: 0;
+          font-family: Arial, sans-serif;
+          font-size: 10pt;
+          color: #000;
+        }
+
+        body {
+          padding: 0.35in;
+        }
+
+        h1 {
+          font-size: 14pt;
+          margin: 0 0 0.2in 0;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          table-layout: fixed;
+        }
+
+        th, td {
+          border: 1px solid #000;
+          padding: 0.18in 0.08in;
+          text-align: left;
+          vertical-align: top;
+          white-space: normal;
+          word-break: normal;
+          overflow-wrap: break-word;
+          hyphens: auto;
+        }
+
+        th {
+          font-weight: 700;
+          background: #f2f2f2;
+        }
+
+        thead {
+          display: table-header-group;
+        }
+
+        tr, td, th {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+
+        /* Column tuning */
+        th[data-col-key="iri"],
+        td[data-col-key="iri"] {
+          width: 14%;
+          font-size: 9pt;
+          overflow-wrap: anywhere;
+        }
+
+        th[data-col-key="type"],
+        td[data-col-key="type"] {
+          width: 12%;
+          font-size: 9pt;
+          overflow-wrap: anywhere;
+        }
+
+        th[data-col-key="label"],
+        td[data-col-key="label"] {
+          width: 8%;
+        }
+
+        th[data-col-key="definition"],
+        td[data-col-key="definition"] {
+          width: 18%;
+        }
+
+        th[data-col-key="preferredLabel"],
+        td[data-col-key="preferredLabel"] {
+          width: 10%;
+        }
+
+        th[data-col-key="alternativeLabel"],
+        td[data-col-key="alternativeLabel"] {
+          width: 10%;
+        }
+
+        th[data-col-key="acronym"],
+        td[data-col-key="acronym"] {
+          width: 6%;
+        }
+
+        th[data-col-key="subClassOf"],
+        td[data-col-key="subClassOf"] {
+          width: 10%;
+          font-size: 9pt;
+          overflow-wrap: anywhere;
+        }
+
+        th[data-col-key="subPropertyOf"],
+        td[data-col-key="subPropertyOf"] {
+          width: 10%;
+          font-size: 9pt;
+          overflow-wrap: anywhere;
+        }
+
+        th[data-col-key="definitionSource"],
+        td[data-col-key="definitionSource"] {
+          width: 18%;
+        }
+
+        th[data-col-key="isCuratedIn"],
+        td[data-col-key="isCuratedIn"] {
+          width: 10%;
+          font-size: 9pt;
+          overflow-wrap: anywhere;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>${safeTitle}</h1>
+      ${tableElement.outerHTML}
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+
+  printWindow.focus();
+  printWindow.print();
+  printWindow.close();
 }
 
 export function createLinkIfUri(value) {
@@ -65,7 +203,7 @@ export function renderOntologyCard(container, metadata) {
     ['Version IRI', createLinkIfUri(metadata.versionIri)],
     ['Version Info', metadata.versionInfo],
     ['Description', metadata.description],
-    ['License', createLinkIfUri(metadata.license)],
+    ['License', metadata.license],
     ['Copyright', metadata.rightsHolder]
   ];
 
@@ -208,7 +346,10 @@ export function renderOntologyTable(container, ontologyMeta, tableModel) {
   });
 
   printBtn.addEventListener('click', () => {
-    window.print();
+    printTableOnly(
+      ontologyMeta.ontologyName || ontologyMeta.ontologyIri || 'Ontology Elements',
+      table
+    );
   });
 }
 
