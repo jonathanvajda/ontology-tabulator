@@ -24,9 +24,9 @@ export function logError(fnName, error, context) {
 }
 
 /**
- * Guess RDF format from filename extension for N3 parser.
+ * Guess RDF format from filename extension.
  * @param {string} filename
- * @returns {'text/turtle'|'application/n-triples'|'application/n-quads'|'application/trig'}
+ * @returns {'text/turtle'|'application/n-triples'|'application/n-quads'|'application/trig'|'application/ld+json'|'application/rdf+xml'}
  */
 export function detectRdfFormatFromFilename(filename) {
   const fnName = 'detectRdfFormatFromFilename';
@@ -45,6 +45,16 @@ export function detectRdfFormatFromFilename(filename) {
     }
     if (lower.endsWith('.trig')) {
       return 'application/trig';
+    }
+    if (lower.endsWith('.json') || lower.endsWith('.jsonld')) {
+      return 'application/ld+json';
+    }
+    if (
+      lower.endsWith('.rdf') ||
+      lower.endsWith('.xml') ||
+      lower.endsWith('.owl')
+    ) {
+      return 'application/rdf+xml';
     }
     // Fallback: Turtle
     return 'text/turtle';
@@ -71,9 +81,159 @@ export function isBlankNode(term) {
   }
 }
 
+async function getN3Library() {
+  return typeof window !== 'undefined' && window.N3
+    ? window.N3
+    : await import('n3'); // node / Jest
+}
+
+function isN3ParserFormat(format) {
+  return [
+    'text/turtle',
+    'application/n-triples',
+    'application/n-quads',
+    'application/trig'
+  ].includes(format);
+}
+
+function getBrowserGlobal(name) {
+  return typeof window !== 'undefined' ? window[name] : undefined;
+}
+
+const RDF_FIRST = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#first';
+const RDF_REST = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest';
+const RDF_NIL = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil';
+
+async function parseN3TextToStore(text, format) {
+  const N3lib = await getN3Library();
+  const { Parser, Store } = N3lib;
+  const parser = new Parser({ format });
+  const store = new Store();
+  const quads = parser.parse(text);
+  store.addQuads(quads);
+  return { store, quadCount: quads.length };
+}
+
+async function parseJsonLdTextToStore(text) {
+  const jsonld = getBrowserGlobal('jsonld');
+  if (!jsonld) {
+    throw new Error('JSON-LD support requires docs/app/vendor/jsonld.min.js in the browser.');
+  }
+
+  const nquads = await jsonld.toRDF(JSON.parse(text), {
+    format: 'application/n-quads'
+  });
+  return parseN3TextToStore(nquads, 'application/n-quads');
+}
+
+function getRdflibCollectionElements(term) {
+  if (Array.isArray(term.elements)) return term.elements;
+  if (Array.isArray(term.value)) return term.value;
+  if (Array.isArray(term.items)) return term.items;
+  return [];
+}
+
+function convertRdflibCollectionToN3List(term, dataFactory, graph, extraQuads) {
+  const elements = getRdflibCollectionElements(term);
+  if (!elements.length) return dataFactory.namedNode(RDF_NIL);
+
+  const head = dataFactory.blankNode();
+  let current = head;
+
+  elements.forEach((element, index) => {
+    const next = index === elements.length - 1
+      ? dataFactory.namedNode(RDF_NIL)
+      : dataFactory.blankNode();
+
+    extraQuads.push(
+      dataFactory.quad(
+        current,
+        dataFactory.namedNode(RDF_FIRST),
+        convertRdflibTermToN3Term(element, dataFactory, graph, extraQuads),
+        graph
+      )
+    );
+    extraQuads.push(
+      dataFactory.quad(
+        current,
+        dataFactory.namedNode(RDF_REST),
+        next,
+        graph
+      )
+    );
+
+    current = next;
+  });
+
+  return head;
+}
+
+function convertRdflibTermToN3Term(term, dataFactory, graph, extraQuads) {
+  if (!term) return dataFactory.defaultGraph();
+
+  switch (term.termType) {
+    case 'NamedNode':
+      return dataFactory.namedNode(term.value);
+    case 'BlankNode':
+      return dataFactory.blankNode(term.value);
+    case 'Literal':
+      return dataFactory.literal(
+        term.value,
+        term.language ||
+          term.lang ||
+          (term.datatype ? dataFactory.namedNode(term.datatype.value) : undefined)
+      );
+    case 'Collection':
+      return convertRdflibCollectionToN3List(term, dataFactory, graph, extraQuads);
+    case 'DefaultGraph':
+      return dataFactory.defaultGraph();
+    default:
+      throw new Error(`Unsupported RDF term type from rdflib: ${term.termType}`);
+  }
+}
+
+async function parseRdfXmlTextToStore(text, format) {
+  const rdflib = getBrowserGlobal('$rdf');
+  if (!rdflib) {
+    throw new Error('RDF/XML and OWL support requires docs/app/vendor/rdflib.min.js in the browser.');
+  }
+
+  const N3lib = await getN3Library();
+  const { Store, DataFactory } = N3lib;
+  const sourceStore = rdflib.graph();
+  const baseIri = 'urn:ontology-tabulator:uploaded-document';
+
+  rdflib.parse(text, sourceStore, baseIri, format);
+
+  const store = new Store();
+  const quads = [];
+  sourceStore.statements.forEach(statement => {
+    const extraQuads = [];
+    const graph = convertRdflibTermToN3Term(
+      statement.graph || statement.why,
+      DataFactory,
+      undefined,
+      extraQuads
+    );
+
+    quads.push(
+      DataFactory.quad(
+        convertRdflibTermToN3Term(statement.subject, DataFactory, graph, extraQuads),
+        convertRdflibTermToN3Term(statement.predicate, DataFactory, graph, extraQuads),
+        convertRdflibTermToN3Term(statement.object, DataFactory, graph, extraQuads),
+        graph
+      ),
+      ...extraQuads
+    );
+  });
+  store.addQuads(quads);
+  return { store, quadCount: quads.length };
+}
+
 /**
  * Parse RDF text into an N3 Store.
- * NOTE: In browser we get N3 from window.N3; in Jest we use node 'n3' dependency.
+ * NOTE: N3 is preferred where it supports the syntax. JSON-LD is converted to
+ * N-Quads first; RDF/XML and XML OWL are parsed with rdflib, then converted.
  * @param {string} text
  * @param {string} format
  * @returns {Promise<import('n3').Store>}
@@ -83,19 +243,19 @@ export async function parseRdfTextToStore(text, format) {
   logEvent(fnName, 'start', { format });
 
   try {
-    const N3lib = typeof window !== 'undefined' && window.N3
-      ? window.N3
-      : await import('n3'); // node / Jest
+    let result;
+    if (isN3ParserFormat(format)) {
+      result = await parseN3TextToStore(text, format);
+    } else if (format === 'application/ld+json') {
+      result = await parseJsonLdTextToStore(text);
+    } else if (format === 'application/rdf+xml') {
+      result = await parseRdfXmlTextToStore(text, format);
+    } else {
+      throw new Error(`Unsupported RDF format: ${format}`);
+    }
 
-    const { Parser, Store } = N3lib;
-    const parser = new Parser({ format });
-    const store = new Store();
-
-    const quads = parser.parse(text);
-    store.addQuads(quads);
-
-    logEvent(fnName, 'parsed', { quadCount: quads.length });
-    return store;
+    logEvent(fnName, 'parsed', { quadCount: result.quadCount });
+    return result.store;
   } catch (err) {
     logError(fnName, err, { format });
     throw err;

@@ -122,7 +122,7 @@
           class="ontology-tabulator-file-input"
           type="file"
           multiple
-          accept=".ttl,.nt,.nq,.trig,.n3,.owl,.rdf"
+          accept=".ttl,.nt,.nq,.trig,.n3,.json,.jsonld,.rdf,.xml,.owl"
         />
       </label>
     </div>
@@ -147,10 +147,9 @@
     <div class="ontology-tabulator-loading-spinner"></div>
   </div>
 
-  <!-- N3 as ES module from CDN -->
-  <script type="module" src="./app/n3.min.js">
-    window.N3 = N3; // expose globally so core.js can import from window.N3 in browser
-  </script>
+  <script src="./app/vendor/n3.min.js"></script>
+  <script src="./app/vendor/jsonld.min.js"></script>
+  <script src="./app/vendor/rdflib.min.js"></script>
   <script>
     (function () {
       const JS_SOURCES = [

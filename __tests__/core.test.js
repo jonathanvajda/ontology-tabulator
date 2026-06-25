@@ -23,6 +23,17 @@ describe('detectRdfFormatFromFilename', () => {
     expect(detectRdfFormatFromFilename('data.nt')).toBe('application/n-triples');
   });
 
+  test('detects json and jsonld as JSON-LD', () => {
+    expect(detectRdfFormatFromFilename('data.json')).toBe('application/ld+json');
+    expect(detectRdfFormatFromFilename('data.jsonld')).toBe('application/ld+json');
+  });
+
+  test('detects rdf, xml, and owl as RDF/XML', () => {
+    expect(detectRdfFormatFromFilename('ontology.rdf')).toBe('application/rdf+xml');
+    expect(detectRdfFormatFromFilename('ontology.xml')).toBe('application/rdf+xml');
+    expect(detectRdfFormatFromFilename('ontology.owl')).toBe('application/rdf+xml');
+  });
+
   test('falls back to turtle for unknown extension', () => {
     expect(detectRdfFormatFromFilename('weird.ext')).toBe('text/turtle');
   });
