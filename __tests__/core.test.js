@@ -17,15 +17,23 @@ const { namedNode, literal, quad } = DataFactory;
 describe('detectRdfFormatFromFilename', () => {
   test('detects ttl as text/turtle', () => {
     expect(detectRdfFormatFromFilename('example.ttl')).toBe('text/turtle');
+    expect(detectRdfFormatFromFilename('example.turtle')).toBe('text/turtle');
   });
 
   test('detects nt as application/n-triples', () => {
     expect(detectRdfFormatFromFilename('data.nt')).toBe('application/n-triples');
+    expect(detectRdfFormatFromFilename('data.ntriples')).toBe('application/n-triples');
+  });
+
+  test('detects nq as application/n-quads', () => {
+    expect(detectRdfFormatFromFilename('data.nq')).toBe('application/n-quads');
+    expect(detectRdfFormatFromFilename('data.nquads')).toBe('application/n-quads');
   });
 
   test('detects json and jsonld as JSON-LD', () => {
     expect(detectRdfFormatFromFilename('data.json')).toBe('application/ld+json');
     expect(detectRdfFormatFromFilename('data.jsonld')).toBe('application/ld+json');
+    expect(detectRdfFormatFromFilename('data.json-ld')).toBe('application/ld+json');
   });
 
   test('detects rdf, xml, and owl as RDF/XML', () => {

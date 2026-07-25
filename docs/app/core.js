@@ -33,20 +33,41 @@ export function detectRdfFormatFromFilename(filename) {
   logEvent(fnName, 'start', { filename });
 
   try {
+    const registry = getFormatRegistry();
+    const registryResult = registry?.getSupportedMimeTypeForFilename?.(filename);
+    if (registryResult?.ok && registryResult.value.category === 'rdf') {
+      return registryResult.value.mimeType;
+    }
+
+    // Ontology Tabulator treats plain .json uploads as JSON-LD for legacy
+    // compatibility; the shared registry reserves .json for generic JSON.
+    const registryExtension = registry?.getFilenameExtension?.(filename);
+    if (registryExtension === 'json') {
+      return 'application/ld+json';
+    }
+
     const lower = (filename || '').toLowerCase();
-    if (lower.endsWith('.ttl') || lower.endsWith('.n3')) {
+    if (
+      lower.endsWith('.ttl') ||
+      lower.endsWith('.turtle') ||
+      lower.endsWith('.n3')
+    ) {
       return 'text/turtle';
     }
-    if (lower.endsWith('.nt')) {
+    if (lower.endsWith('.nt') || lower.endsWith('.ntriples')) {
       return 'application/n-triples';
     }
-    if (lower.endsWith('.nq')) {
+    if (lower.endsWith('.nq') || lower.endsWith('.nquads')) {
       return 'application/n-quads';
     }
     if (lower.endsWith('.trig')) {
       return 'application/trig';
     }
-    if (lower.endsWith('.json') || lower.endsWith('.jsonld')) {
+    if (
+      lower.endsWith('.json') ||
+      lower.endsWith('.jsonld') ||
+      lower.endsWith('.json-ld')
+    ) {
       return 'application/ld+json';
     }
     if (
@@ -87,7 +108,14 @@ async function getN3Library() {
     : await import('n3'); // node / Jest
 }
 
+function getFormatRegistry() {
+  return typeof globalThis !== 'undefined' ? globalThis.FormatRegistry : undefined;
+}
+
 function isN3ParserFormat(format) {
+  const parserFormat = getFormatRegistry()?.getN3ParserFormatForMimeType?.(format);
+  if (parserFormat?.ok) return true;
+
   return [
     'text/turtle',
     'application/n-triples',
@@ -107,7 +135,8 @@ const RDF_NIL = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil';
 async function parseN3TextToStore(text, format) {
   const N3lib = await getN3Library();
   const { Parser, Store } = N3lib;
-  const parser = new Parser({ format });
+  const registryFormat = getFormatRegistry()?.getN3ParserFormatForMimeType?.(format);
+  const parser = new Parser({ format: registryFormat?.ok ? registryFormat.value : format });
   const store = new Store();
   const quads = parser.parse(text);
   store.addQuads(quads);

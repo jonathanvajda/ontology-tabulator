@@ -370,6 +370,13 @@ export function tableModelToCsv(model, rows) {
 }
 
 export function downloadCsv(filename, csvContent) {
+  if (globalThis.FormatRegistry?.downloadTextFile) {
+    globalThis.FormatRegistry.downloadTextFile(filename, csvContent, {
+      mimeType: 'text/csv'
+    });
+    return;
+  }
+
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

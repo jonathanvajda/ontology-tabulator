@@ -122,7 +122,7 @@
           class="ontology-tabulator-file-input"
           type="file"
           multiple
-          accept=".ttl,.nt,.nq,.trig,.n3,.json,.jsonld,.rdf,.xml,.owl"
+          accept=".ttl,.turtle,.n3,.nt,.ntriples,.nq,.nquads,.trig,.json,.jsonld,.json-ld,.rdf,.xml,.owl"
         />
       </label>
     </div>
@@ -150,6 +150,7 @@
   <script src="./app/vendor/n3.min.js"></script>
   <script src="./app/vendor/jsonld.min.js"></script>
   <script src="./app/vendor/rdflib.min.js"></script>
+  <script src="./app/shared/format-registry/browser-global.js"></script>
   <script>
     (function () {
       const JS_SOURCES = [
