@@ -112,6 +112,9 @@
   <link rel="modulepreload" href="./app/shared/namespace-registry/namespace-registry.js" />
   <link rel="modulepreload" href="./app/shared/namespace-registry/curie.js" />
   <link rel="modulepreload" href="./app/shared/namespace-registry/prefix-map.js" />
+  <link rel="modulepreload" href="./app/shared/format-registry/mime-registry.js" />
+  <link rel="modulepreload" href="./app/shared/format-registry/rdf-parser-formats.js" />
+  <link rel="modulepreload" href="./app/shared/format-registry/browser-file-actions.js" />
 </head>
 <body data-page-id="ontology-tabulator" class="ontology-tabulator-root ontology-tabulator-theme-light">
 
@@ -153,7 +156,6 @@
   <script src="./app/vendor/n3.min.js"></script>
   <script src="./app/vendor/jsonld.min.js"></script>
   <script src="./app/vendor/rdflib.min.js"></script>
-  <script src="./app/shared/format-registry/browser-global.js"></script>
   <script>
     (function () {
       const JS_SOURCES = [

@@ -1,5 +1,6 @@
 // app/ui-helpers.js
 import { filterAndSortRows, toPascalCase } from './core.js';
+import { downloadTextFile } from './shared/format-registry/browser-file-actions.js';
 
 export function showLoadingOverlay() {
   const el = document.getElementById('loadingOverlay');
@@ -370,20 +371,5 @@ export function tableModelToCsv(model, rows) {
 }
 
 export function downloadCsv(filename, csvContent) {
-  if (globalThis.FormatRegistry?.downloadTextFile) {
-    globalThis.FormatRegistry.downloadTextFile(filename, csvContent, {
-      mimeType: 'text/csv'
-    });
-    return;
-  }
-
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+  downloadTextFile(filename, csvContent, { mimeType: 'text/csv' });
 }

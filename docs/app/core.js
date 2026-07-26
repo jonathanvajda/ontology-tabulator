@@ -7,6 +7,11 @@ import {
   namespaceToPrefixMap
 } from './shared/namespace-registry/namespace-registry.js';
 import { compactIriToCurie, findLongestPrefixMatch } from './shared/namespace-registry/curie.js';
+import {
+  getFilenameExtension,
+  getSupportedMimeTypeForFilename
+} from './shared/format-registry/mime-registry.js';
+import { getN3ParserFormatForMimeType } from './shared/format-registry/rdf-parser-formats.js';
 
 /**
  * Simple event logger for core functions.
@@ -38,15 +43,14 @@ export function detectRdfFormatFromFilename(filename) {
   logEvent(fnName, 'start', { filename });
 
   try {
-    const registry = getFormatRegistry();
-    const registryResult = registry?.getSupportedMimeTypeForFilename?.(filename);
+    const registryResult = getSupportedMimeTypeForFilename(filename);
     if (registryResult?.ok && registryResult.value.category === 'rdf') {
       return registryResult.value.mimeType;
     }
 
     // Ontology Tabulator treats plain .json uploads as JSON-LD for legacy
     // compatibility; the shared registry reserves .json for generic JSON.
-    const registryExtension = registry?.getFilenameExtension?.(filename);
+    const registryExtension = getFilenameExtension(filename);
     if (registryExtension === 'json') {
       return 'application/ld+json';
     }
@@ -113,12 +117,8 @@ async function getN3Library() {
     : await import('n3'); // node / Jest
 }
 
-function getFormatRegistry() {
-  return typeof globalThis !== 'undefined' ? globalThis.FormatRegistry : undefined;
-}
-
 function isN3ParserFormat(format) {
-  const parserFormat = getFormatRegistry()?.getN3ParserFormatForMimeType?.(format);
+  const parserFormat = getN3ParserFormatForMimeType(format);
   if (parserFormat?.ok) return true;
 
   return [
@@ -140,7 +140,7 @@ const RDF_NIL = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil';
 async function parseN3TextToStore(text, format) {
   const N3lib = await getN3Library();
   const { Parser, Store } = N3lib;
-  const registryFormat = getFormatRegistry()?.getN3ParserFormatForMimeType?.(format);
+  const registryFormat = getN3ParserFormatForMimeType(format);
   const parser = new Parser({ format: registryFormat?.ok ? registryFormat.value : format });
   const store = new Store();
   const quads = parser.parse(text);
