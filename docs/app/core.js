@@ -2,6 +2,11 @@
 // Core ontology logic – ES modules, “mostly pure”, with logging & error handling.
 
 /* eslint-disable no-console */
+import {
+  namespacePrefixMapFromRegistry,
+  namespaceToPrefixMap
+} from './shared/namespace-registry/namespace-registry.js';
+import { compactIriToCurie, findLongestPrefixMatch } from './shared/namespace-registry/curie.js';
 
 /**
  * Simple event logger for core functions.
@@ -292,26 +297,21 @@ export async function parseRdfTextToStore(text, format) {
 }
 
 // Namespace constants
-export const NS = {
-  rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-  rdfs: 'http://www.w3.org/2000/01/rdf-schema#',
-  owl: 'http://www.w3.org/2002/07/owl#',
-  dc: 'http://purl.org/dc/elements/1.1/',
-  dcterms: 'http://purl.org/dc/terms/',
-  skos: 'http://www.w3.org/2004/02/skos/core#',
-  obo: 'http://purl.obolibrary.org/obo/',
-  cco: 'http://www.ontologyrepository.com/CommonCoreOntologies/',
-  cco2: 'https://www.commoncoreontologies.org/'
-};
+const REGISTRY_PREFIXES = namespacePrefixMapFromRegistry();
 
-export const COMMON_PREFIXES = {
-  [NS.rdf]: 'rdf',
-  [NS.rdfs]: 'rdfs',
-  [NS.owl]: 'owl',
-  [NS.dc]: 'dc',
-  [NS.dcterms]: 'dcterms',
-  [NS.skos]: 'skos'
-};
+export const NS = Object.freeze({
+  rdf: REGISTRY_PREFIXES.rdf,
+  rdfs: REGISTRY_PREFIXES.rdfs,
+  owl: REGISTRY_PREFIXES.owl,
+  dc: REGISTRY_PREFIXES.dc,
+  dcterms: REGISTRY_PREFIXES.dcterms,
+  skos: REGISTRY_PREFIXES.skos,
+  obo: REGISTRY_PREFIXES.obo,
+  cco: REGISTRY_PREFIXES.cco,
+  cco2: REGISTRY_PREFIXES.cco2
+});
+
+export const COMMON_PREFIXES = namespaceToPrefixMap(REGISTRY_PREFIXES);
 
 /**
  * Pick the ontology subject (IRI) from a store.
@@ -760,10 +760,12 @@ export function iriToCurieIfCommon(iri) {
   logEvent(fnName, 'start', { iri });
 
   try {
-    for (const [ns, prefix] of Object.entries(COMMON_PREFIXES)) {
-      if (iri.startsWith(ns)) {
-        return `${prefix}:${iri.slice(ns.length)}`;
-      }
+    const compacted = compactIriToCurie(iri, REGISTRY_PREFIXES);
+    if (compacted.ok) return compacted.value;
+
+    const match = findLongestPrefixMatch(iri, REGISTRY_PREFIXES);
+    if (match.ok) {
+      return `${match.prefix}:${String(iri || '').slice(match.namespaceIri.length)}`;
     }
     return iri;
   } catch (err) {
