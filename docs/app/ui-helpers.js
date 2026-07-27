@@ -1,6 +1,7 @@
 // app/ui-helpers.js
 import { filterAndSortRows, toPascalCase } from './core.js';
 import { downloadTextFile } from './shared/browser-file-io/index.js';
+import { serializeDelimitedRows } from './shared/tabular-io/index.js';
 
 export function showLoadingOverlay() {
   const el = document.getElementById('loadingOverlay');
@@ -355,19 +356,15 @@ export function renderOntologyTable(container, ontologyMeta, tableModel) {
 }
 
 export function tableModelToCsv(model, rows) {
-  const headerRow = model.headers.join(',');
-  const lines = [headerRow];
+  const tableRows = [
+    model.headers,
+    ...rows.map(row => model.keys.map(key => (key ? (row[key] ?? '') : '')))
+  ];
 
-  rows.forEach(row => {
-    const values = model.keys.map(key => {
-      const v = key ? (row[key] ?? '') : '';
-      const escaped = String(v).replace(/"/g, '""');
-      return `"${escaped}"`;
-    });
-    lines.push(values.join(','));
+  return serializeDelimitedRows(tableRows, {
+    delimiter: ',',
+    trailingNewline: false
   });
-
-  return lines.join('\n');
 }
 
 export function downloadCsv(filename, csvContent) {
