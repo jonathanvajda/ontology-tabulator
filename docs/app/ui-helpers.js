@@ -1,6 +1,6 @@
 // app/ui-helpers.js
 import { filterAndSortRows, toPascalCase } from './core.js';
-import { downloadTextFile } from './shared/format-registry/browser-file-actions.js';
+import { downloadTextFile } from './shared/browser-file-io/index.js';
 
 export function showLoadingOverlay() {
   const el = document.getElementById('loadingOverlay');
