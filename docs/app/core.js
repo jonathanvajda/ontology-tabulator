@@ -12,6 +12,7 @@ import {
   getSupportedMimeTypeForFilename
 } from './shared/format-registry/mime-registry.js';
 import { getN3ParserFormatForMimeType } from './shared/format-registry/rdf-parser-formats.js';
+import { parseRdfTextWithAdapters } from './shared/rdf-io/index.js';
 
 /**
  * Simple event logger for core functions.
@@ -277,19 +278,18 @@ export async function parseRdfTextToStore(text, format) {
   logEvent(fnName, 'start', { format });
 
   try {
-    let result;
-    if (isN3ParserFormat(format)) {
-      result = await parseN3TextToStore(text, format);
-    } else if (format === 'application/ld+json') {
-      result = await parseJsonLdTextToStore(text);
-    } else if (format === 'application/rdf+xml') {
-      result = await parseRdfXmlTextToStore(text, format);
-    } else {
-      throw new Error(`Unsupported RDF format: ${format}`);
-    }
+    const parsed = await parseRdfTextWithAdapters(text, {
+      format,
+      runtime: {
+        N3: await getN3Library(),
+        jsonld: getBrowserGlobal('jsonld'),
+        $rdf: getBrowserGlobal('$rdf')
+      },
+      baseIri: 'urn:ontology-tabulator:uploaded-document'
+    });
 
-    logEvent(fnName, 'parsed', { quadCount: result.quadCount });
-    return result.store;
+    logEvent(fnName, 'parsed', { quadCount: parsed.quads.length });
+    return parsed.dataset;
   } catch (err) {
     logError(fnName, err, { format });
     throw err;
