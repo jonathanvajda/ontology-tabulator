@@ -344,7 +344,7 @@ export function renderOntologyTable(container, ontologyMeta, tableModel) {
     const baseName = toPascalCase(ontologyMeta.ontologyName || ontologyMeta.ontologyIri);
     const timestamp = new Date().toISOString().replace(/[:]/g, '-');
     const filename = `${baseName}_${timestamp}.csv`;
-    downloadCsv(filename, csv);
+    downloadTextFile(filename, csv, { mimeType: 'text/csv' });
   });
 
   printBtn.addEventListener('click', () => {
@@ -367,6 +367,3 @@ export function tableModelToCsv(model, rows) {
   });
 }
 
-export function downloadCsv(filename, csvContent) {
-  downloadTextFile(filename, csvContent, { mimeType: 'text/csv' });
-}
