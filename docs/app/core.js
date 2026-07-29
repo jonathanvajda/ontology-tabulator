@@ -4,8 +4,7 @@
 /* eslint-disable no-console */
 import {
   COMMON_NAMESPACE_IRIS,
-  namespacePrefixMapFromRegistry,
-  namespaceToPrefixMap
+  namespacePrefixMapFromRegistry
 } from './shared/namespace-registry/namespace-registry.js';
 import { compactIriToCurie, findLongestPrefixMatch } from './shared/namespace-registry/curie.js';
 import {
@@ -169,8 +168,6 @@ export const NS = Object.freeze({
   cco: REGISTRY_PREFIXES.cco,
   cco2: REGISTRY_PREFIXES.cco2
 });
-
-export const COMMON_PREFIXES = namespaceToPrefixMap(REGISTRY_PREFIXES);
 
 /**
  * Pick the ontology subject (IRI) from a store.
@@ -610,7 +607,7 @@ export function shouldIncludeElementSubject(store, subject) {
 }
 
 /**
- * Shorten IRI to CURIE using COMMON_PREFIXES if possible.
+ * Shorten IRI to CURIE using the promoted namespace registry if possible.
  * @param {string} iri
  * @returns {string}
  */
