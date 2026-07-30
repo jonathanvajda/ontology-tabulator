@@ -3,12 +3,15 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "check": "npm run lint && npm test",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll",
-    "lint": "echo \"(add eslint here if desired)\"",
+    "lint": "eslint . --quiet",
     "audit": "npm audit --audit-level=high"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.0",
     "jest": "^29.7.0",
     "n3": "^1.17.4"
   }
