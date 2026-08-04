@@ -6,10 +6,10 @@ import {
   pickBestLiteral,
   buildElementTableModel,
   filterAndSortRows,
-  NS,
   extractOntologyMetadata
 } from '../docs/app/core.js';
 
+import { COMMON_NAMESPACE_IRIS } from '../docs/app/shared/namespace-registry/index.js';
 import { Store, DataFactory } from 'n3';
 
 const { namedNode, literal, quad } = DataFactory;
@@ -89,8 +89,8 @@ test('extractOntologyMetadata reads owl:versionIRI as an IRI', () => {
   const ont = namedNode('http://example.org/ont');
   const ver = namedNode('http://example.org/ont/1.0.0');
 
-  store.addQuad(quad(ont, namedNode(NS.rdf + 'type'), namedNode(NS.owl + 'Ontology')));
-  store.addQuad(quad(ont, namedNode(NS.owl + 'versionIRI'), ver));
+  store.addQuad(quad(ont, namedNode(COMMON_NAMESPACE_IRIS.rdf.type), namedNode(COMMON_NAMESPACE_IRIS.owl.Ontology)));
+  store.addQuad(quad(ont, namedNode(COMMON_NAMESPACE_IRIS.owl.versionIRI), ver));
 
   const meta = extractOntologyMetadata(store);
   expect(meta.versionIri).toBe(ver.value);
@@ -100,8 +100,8 @@ test('extractOntologyMetadata accepts owl:versionIRI as a plain literal', () => 
   const store = new Store();
   const ont = namedNode('http://example.org/ont');
 
-  store.addQuad(quad(ont, namedNode(NS.rdf + 'type'), namedNode(NS.owl + 'Ontology')));
-  store.addQuad(quad(ont, namedNode(NS.owl + 'versionIRI'), literal('https://example.org/ont/1.0.0')));
+  store.addQuad(quad(ont, namedNode(COMMON_NAMESPACE_IRIS.rdf.type), namedNode(COMMON_NAMESPACE_IRIS.owl.Ontology)));
+  store.addQuad(quad(ont, namedNode(COMMON_NAMESPACE_IRIS.owl.versionIRI), literal('https://example.org/ont/1.0.0')));
 
   const meta = extractOntologyMetadata(store);
   expect(meta.versionIri).toBe('https://example.org/ont/1.0.0');
@@ -116,34 +116,34 @@ describe('buildElementTableModel (fixed columns)', () => {
     const curatedInOnt = namedNode('http://example.org/ExampleOntology');
 
     // rdf:type owl:Class (so it gets included as an element)
-    store.addQuad(quad(cls, namedNode(NS.rdf + 'type'), namedNode(NS.owl + 'Class')));
+    store.addQuad(quad(cls, namedNode(COMMON_NAMESPACE_IRIS.rdf.type), namedNode(COMMON_NAMESPACE_IRIS.owl.Class)));
 
     // label candidates: rdfs:label > dcterms:title > dc:title
-    store.addQuad(quad(cls, namedNode(NS.rdfs + 'label'), literal('Class A Label', 'en')));
-    store.addQuad(quad(cls, namedNode(NS.dcterms + 'title'), literal('Class A Title', 'en')));
+    store.addQuad(quad(cls, namedNode(COMMON_NAMESPACE_IRIS.rdfs.label), literal('Class A Label', 'en')));
+    store.addQuad(quad(cls, namedNode(COMMON_NAMESPACE_IRIS.dcterms.title), literal('Class A Title', 'en')));
 
     // definition candidates: skos:definition > obo:IAO_0000115 > cco:definition
-    store.addQuad(quad(cls, namedNode(NS.skos + 'definition'), literal('A test definition', 'en')));
+    store.addQuad(quad(cls, namedNode(COMMON_NAMESPACE_IRIS.skos.definition), literal('A test definition', 'en')));
 
     // preferred label: skos:prefLabel > obo:IAO_0000111
-    store.addQuad(quad(cls, namedNode(NS.skos + 'prefLabel'), literal('Preferred A', 'en')));
+    store.addQuad(quad(cls, namedNode(COMMON_NAMESPACE_IRIS.skos.prefLabel), literal('Preferred A', 'en')));
 
     // alternative labels: skos:altLabel, obo:IAO_0000118, cco:alternative_label
-    store.addQuad(quad(cls, namedNode(NS.skos + 'altLabel'), literal('Alt 1', 'en')));
-    store.addQuad(quad(cls, namedNode(NS.skos + 'altLabel'), literal('Alt 2', 'en')));
+    store.addQuad(quad(cls, namedNode(COMMON_NAMESPACE_IRIS.skos.altLabel), literal('Alt 1', 'en')));
+    store.addQuad(quad(cls, namedNode(COMMON_NAMESPACE_IRIS.skos.altLabel), literal('Alt 2', 'en')));
 
     // acronym: cco:acronym, obo:IAO_0000606, cco2:ont00001753
-    store.addQuad(quad(cls, namedNode(NS.cco + 'acronym'), literal('CA')));
+    store.addQuad(quad(cls, namedNode(COMMON_NAMESPACE_IRIS.cceo.acronym), literal('CA')));
 
     // rdfs:subClassOf (non-blank)
-    store.addQuad(quad(cls, namedNode(NS.rdfs + 'subClassOf'), parentCls));
+    store.addQuad(quad(cls, namedNode(COMMON_NAMESPACE_IRIS.rdfs.subClassOf), parentCls));
 
     // definition source: use dcterms:bibliographicCitation so “definition source” column is present
-    store.addQuad(quad(cls, namedNode(NS.dcterms + 'bibliographicCitation'), literal('Smith 2020', 'en')));
+    store.addQuad(quad(cls, namedNode(COMMON_NAMESPACE_IRIS.dcterms.bibliographicCitation), literal('Smith 2020', 'en')));
 
     // is curated in: cco2:ont00001760 > rdfs:isDefinedBy
     store.addQuad(
-      quad(cls, namedNode(NS.cco2 + 'ont00001760'), literal(curatedInOnt.value, 'en'))
+      quad(cls, namedNode(COMMON_NAMESPACE_IRIS.cco2.curatedIn), literal(curatedInOnt.value, 'en'))
     );
 
     const model = buildElementTableModel(store);
@@ -174,7 +174,7 @@ describe('buildElementTableModel (fixed columns)', () => {
     expect(row.preferredLabel).toBe('Preferred A');
 
     // type should contain owl:Class
-    expect(row.type).toContain(NS.owl + 'Class');
+    expect(row.type).toContain(COMMON_NAMESPACE_IRIS.owl.Class);
 
     // multi-valued fields are joined with "; "
     expect(row.alternativeLabel).toContain('Alt 1');

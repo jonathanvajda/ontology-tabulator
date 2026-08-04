@@ -14,6 +14,7 @@ import {
 import { parseRdfTextWithAdapters } from './shared/rdf-io/index.js';
 
 const COMMON_IRIS = COMMON_NAMESPACE_IRIS;
+const REGISTERED_PREFIXES = namespacePrefixMapFromRegistry();
 
 /**
  * Simple event logger for core functions.
@@ -154,20 +155,6 @@ export async function parseRdfTextToStore(text, format) {
   }
 }
 
-// Namespace constants
-const REGISTRY_PREFIXES = namespacePrefixMapFromRegistry();
-
-export const NS = Object.freeze({
-  rdf: REGISTRY_PREFIXES.rdf,
-  rdfs: REGISTRY_PREFIXES.rdfs,
-  owl: REGISTRY_PREFIXES.owl,
-  dc: REGISTRY_PREFIXES.dc,
-  dcterms: REGISTRY_PREFIXES.dcterms,
-  skos: REGISTRY_PREFIXES.skos,
-  obo: REGISTRY_PREFIXES.obo,
-  cco: REGISTRY_PREFIXES.cco,
-  cco2: REGISTRY_PREFIXES.cco2
-});
 
 /**
  * Pick the ontology subject (IRI) from a store.
@@ -183,9 +170,9 @@ export function getOntologySubjectIri(store) {
     const all = store.getQuads(null, null, null, null);
     const candidate = all.find(q =>
       q.predicate.termType === 'NamedNode' &&
-      q.predicate.value === NS.rdf + 'type' &&
+      q.predicate.value === COMMON_NAMESPACE_IRIS.rdf.type &&
       q.object.termType === 'NamedNode' &&
-      q.object.value === NS.owl + 'Ontology'
+      q.object.value === COMMON_NAMESPACE_IRIS.owl.Ontology
     );
 
     if (!candidate) {
@@ -527,33 +514,33 @@ export function extractOntologyMetadata(store) {
     const meta = {
       ontologyIri: S,
       ontologyName: getPreferredLiteralForPredicates(store, S, [
-        NS.rdfs + 'label',
-        NS.dcterms + 'title',
-        NS.dc + 'title'
+        COMMON_NAMESPACE_IRIS.rdfs.label,
+        COMMON_NAMESPACE_IRIS.dcterms.title,
+        COMMON_NAMESPACE_IRIS.dc.title
       ]),
       versionIri: getPreferredDisplayValueForPredicates(store, S, [
-        NS.owl + 'versionIRI',
-        NS.dcterms + 'hasVersion'
+        COMMON_NAMESPACE_IRIS.owl.versionIRI,
+        COMMON_NAMESPACE_IRIS.dcterms.hasVersion
       ]),
       versionInfo: getPreferredLiteralForPredicates(store, S, [
-        NS.owl + 'versionInfo',
-        NS.dcterms + 'hasVersion'
+        COMMON_NAMESPACE_IRIS.owl.versionInfo,
+        COMMON_NAMESPACE_IRIS.dcterms.hasVersion
       ]),
       description: getPreferredLiteralForPredicates(store, S, [
-        NS.skos + 'definition',
-        NS.dcterms + 'description',
-        NS.dc + 'description'
+        COMMON_NAMESPACE_IRIS.skos.definition,
+        COMMON_NAMESPACE_IRIS.dcterms.description,
+        COMMON_NAMESPACE_IRIS.dc.description
       ]),
       license: getPreferredLiteralForPredicates(store, S, [
-        NS.dc + 'rights',
-        NS.dc + 'accessRights',
-        NS.dcterms + 'license',
-        NS.dcterms + 'rights',
-        NS.dcterms + 'accessRights'
+        COMMON_NAMESPACE_IRIS.dc.rights,
+        COMMON_NAMESPACE_IRIS.dc.accessRights,
+        COMMON_NAMESPACE_IRIS.dcterms.license,
+        COMMON_NAMESPACE_IRIS.dcterms.rights,
+        COMMON_NAMESPACE_IRIS.dcterms.accessRights
       ]),
       rightsHolder: getPreferredLiteralForPredicates(store, S, [
-        NS.dc + 'rightsHolder',
-        NS.dcterms + 'rightsHolder'
+        COMMON_NAMESPACE_IRIS.dc.rightsHolder,
+        COMMON_NAMESPACE_IRIS.dcterms.rightsHolder
       ])
     };
     logEvent(fnName, 'metadata extracted', meta);
@@ -580,12 +567,12 @@ export function shouldIncludeElementSubject(store, subject) {
     if (!subject || subject.termType !== 'NamedNode') return false;
 
     const interestingTypes = [
-      NS.owl + 'Class',
-      NS.owl + 'NamedIndividual',
-      NS.owl + 'ObjectProperty',
-      NS.owl + 'DataProperty',
-      NS.owl + 'DatatypeProperty',
-      NS.owl + 'AnnotationProperty'
+      COMMON_NAMESPACE_IRIS.owl.Class,
+      COMMON_NAMESPACE_IRIS.owl.NamedIndividual,
+      COMMON_NAMESPACE_IRIS.owl.ObjectProperty,
+      COMMON_NAMESPACE_IRIS.owl.DatatypeProperty,
+      COMMON_NAMESPACE_IRIS.owl.DatatypeProperty,
+      COMMON_NAMESPACE_IRIS.owl.AnnotationProperty
     ];
 
     const quadsForSubject = store.getQuads(subject, null, null, null);
@@ -593,7 +580,7 @@ export function shouldIncludeElementSubject(store, subject) {
     const types = quadsForSubject
       .filter(q =>
         q.predicate.termType === 'NamedNode' &&
-        q.predicate.value === NS.rdf + 'type' &&
+        q.predicate.value === COMMON_NAMESPACE_IRIS.rdf.type &&
         q.object.termType === 'NamedNode'
       )
       .map(q => q.object.value);
@@ -616,10 +603,10 @@ export function iriToCurieIfCommon(iri) {
   logEvent(fnName, 'start', { iri });
 
   try {
-    const compacted = compactIriToCurie(iri, REGISTRY_PREFIXES);
+    const compacted = compactIriToCurie(iri, REGISTERED_PREFIXES);
     if (compacted.ok) return compacted.value;
 
-    const match = findLongestPrefixMatch(iri, REGISTRY_PREFIXES);
+    const match = findLongestPrefixMatch(iri, REGISTERED_PREFIXES);
     if (match.ok) {
       return `${match.prefix}:${String(iri || '').slice(match.namespaceIri.length)}`;
     }
@@ -707,59 +694,59 @@ export function buildElementTableModel(store) {
       const iri = subj.value;
 
       const label = getPreferredLiteralForPredicates(store, iri, [
-        NS.rdfs + 'label',
-        NS.dcterms + 'title',
-        NS.dc + 'title'
+        COMMON_NAMESPACE_IRIS.rdfs.label,
+        COMMON_NAMESPACE_IRIS.dcterms.title,
+        COMMON_NAMESPACE_IRIS.dc.title
       ]);
 
       const typeArr = getIriArrayForPredicates(store, iri, [
-        NS.rdf + 'type'
+        COMMON_NAMESPACE_IRIS.rdf.type
       ]);
 
       const definition = getPreferredLiteralForPredicates(store, iri, [
-        NS.skos + 'definition',
-        NS.obo + 'IAO_0000115',
-        NS.cco + 'definition'
+        COMMON_NAMESPACE_IRIS.skos.definition,
+        COMMON_NAMESPACE_IRIS.iao.definition,
+        COMMON_NAMESPACE_IRIS.cceo.definition
       ]);
 
       const preferredLabel = getPreferredLiteralForPredicates(store, iri, [
-        NS.skos + 'prefLabel',
-        NS.obo + 'IAO_0000111'
+        COMMON_NAMESPACE_IRIS.skos.prefLabel,
+        COMMON_NAMESPACE_IRIS.iao.preferredTerm
       ]);
 
       const alternativeLabelArr = getLiteralArrayForPredicates(store, iri, [
-        NS.skos + 'altLabel',
-        NS.obo + 'IAO_0000118',
-        NS.cco + 'alternative_label'
+        COMMON_NAMESPACE_IRIS.skos.altLabel,
+        COMMON_NAMESPACE_IRIS.iao.alternativeTerm,
+        COMMON_NAMESPACE_IRIS.cceo.alternativeLabel
       ]);
 
       const acronymArr = getLiteralArrayForPredicates(store, iri, [
-        NS.cco + 'acronym',
-        NS.obo + 'IAO_0000606',
-        NS.cco2 + 'ont00001753'
+        COMMON_NAMESPACE_IRIS.cceo.acronym,
+        COMMON_NAMESPACE_IRIS.iao.acronym,
+        COMMON_NAMESPACE_IRIS.cco2.acronym
       ]);
 
       const subClassOfArr = getIriArrayForPredicates(store, iri, [
-        NS.rdfs + 'subClassOf'
+        COMMON_NAMESPACE_IRIS.rdfs.subClassOf
       ]);
 
       const subPropertyOfArr = getIriArrayForPredicates(store, iri, [
-        NS.rdfs + 'subPropertyOf'
+        COMMON_NAMESPACE_IRIS.rdfs.subPropertyOf
       ]);
 
       const definitionSourceArr = getAnyArrayForPredicates(store, iri, [
-        NS.dcterms + 'bibliographicCitation',
-        NS.dc + 'bibliographicCitation',
-        NS.obo + 'IAO_0000119',
-        NS.cco2 + 'ont00001754',
-        NS.cco + 'definition_source',
-        NS.cco2 + 'ont00001745',
-        NS.cco + 'doctrinal_source'
+        COMMON_NAMESPACE_IRIS.dcterms.bibliographicCitation,
+        COMMON_NAMESPACE_IRIS.dc.bibliographicCitation,
+        COMMON_NAMESPACE_IRIS.iao.definitionSource,
+        COMMON_NAMESPACE_IRIS.cco2.definitionSource,
+        COMMON_NAMESPACE_IRIS.cceo.definitionSource,
+        COMMON_NAMESPACE_IRIS.cco2.doctrinalSource,
+        COMMON_NAMESPACE_IRIS.cceo.doctrinalSource
       ]);
 
       const isCuratedInArr = getLiteralArrayForPredicates(store, iri, [
-        NS.cco2 + 'ont00001760',
-        NS.rdfs + 'isDefinedBy'
+        COMMON_NAMESPACE_IRIS.cco2.curatedIn,
+        COMMON_NAMESPACE_IRIS.rdfs.isDefinedBy
       ]);
 
       const row = {
