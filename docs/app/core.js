@@ -13,7 +13,6 @@ import {
 } from './shared/format-registry/mime-registry.js';
 import { parseRdfTextWithAdapters } from './shared/rdf-io/index.js';
 
-const COMMON_IRIS = COMMON_NAMESPACE_IRIS;
 const REGISTERED_PREFIXES = namespacePrefixMapFromRegistry();
 
 /**
@@ -327,7 +326,7 @@ export function getPreferredUriLikeForPredicates(store, subjectIri, predicateIri
         if (
           q.object.termType === 'Literal' &&
           q.object.datatype &&
-          q.object.datatype.value === COMMON_IRIS.xsd.anyURI
+          q.object.datatype.value === COMMON_NAMESPACE_IRIS.xsd.anyURI
         ) {
           return true;
         }
