@@ -6,6 +6,7 @@ import {
   COMMON_NAMESPACE_IRIS,
   namespacePrefixMapFromRegistry
 } from './shared/namespace-registry/namespace-registry.js';
+import { isBlankNodeTerm } from './shared/ontology-utils/index.js';
 import { compactIriToCurie, findLongestPrefixMatch } from './shared/namespace-registry/curie.js';
 import {
   getFilenameExtension,
@@ -106,7 +107,7 @@ export function isBlankNode(term) {
   logEvent(fnName, 'start', { termType: term?.termType, value: term?.value });
 
   try {
-    return !!term && term.termType === 'BlankNode';
+    return isBlankNodeTerm(term);
   } catch (err) {
     logError(fnName, err, { term });
     throw err;
