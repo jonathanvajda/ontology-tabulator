@@ -2,7 +2,6 @@
 
 import {
   detectRdfFormatFromFilename,
-  toPascalCase,
   pickBestLiteral,
   buildElementTableModel,
   filterAndSortRows,
@@ -10,6 +9,7 @@ import {
 } from '../docs/app/core.js';
 
 import { COMMON_NAMESPACE_IRIS } from '../docs/app/shared/namespace-registry/index.js';
+import { normalizeStringToPascalCase } from '../docs/app/shared/normalization-utils/index.js';
 import { Store, DataFactory } from 'n3';
 
 const { namedNode, literal, quad } = DataFactory;
@@ -47,17 +47,17 @@ describe('detectRdfFormatFromFilename', () => {
   });
 });
 
-describe('toPascalCase', () => {
+describe('promoted PascalCase normalization', () => {
   test('converts simple phrase', () => {
-    expect(toPascalCase('example ontology name')).toBe('ExampleOntologyName');
+    expect(normalizeStringToPascalCase('example ontology name')).toBe('ExampleOntologyName');
   });
 
   test('handles punctuation and multiple separators', () => {
-    expect(toPascalCase('example-ontology_name.foo')).toBe('ExampleOntologyNameFoo');
+    expect(normalizeStringToPascalCase('example-ontology_name.foo')).toBe('ExampleOntologyNameFoo');
   });
 
-  test('handles null gracefully', () => {
-    expect(toPascalCase(null)).toBe('Ontology');
+  test('keeps the app fallback outside the promoted primitive', () => {
+    expect(normalizeStringToPascalCase(null) || 'Ontology').toBe('Ontology');
   });
 });
 

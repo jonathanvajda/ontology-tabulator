@@ -601,33 +601,6 @@ export function iriToCurieIfCommon(iri) {
 }
 
 /**
- * Convert a free-text name to PascalCase.
- * Used for generating CSV/print filenames.
- * @param {string|null} name
- * @returns {string}
- */
-export function toPascalCase(name) {
-  const fnName = 'toPascalCase';
-  logEvent(fnName, 'start', { name });
-
-  try {
-    if (!name) return 'Ontology';
-    const parts = String(name)
-      .replace(/[^A-Za-z0-9]+/g, ' ')
-      .trim()
-      .split(/\s+/);
-
-    if (parts.length === 0) return 'Ontology';
-    return parts
-      .map(p => p.charAt(0).toUpperCase() + p.slice(1))
-      .join('');
-  } catch (err) {
-    logError(fnName, err, { name });
-    throw err;
-  }
-}
-
-/**
  * Build a fixed-column table model for ontology elements.
  *
  * Columns (headers / keys):

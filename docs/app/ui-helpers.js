@@ -1,5 +1,6 @@
 // app/ui-helpers.js
-import { filterAndSortRows, toPascalCase } from './core.js';
+import { filterAndSortRows } from './core.js';
+import { normalizeStringToPascalCase } from './shared/normalization-utils/index.js';
 import { downloadTextFile } from './shared/browser-file-io/index.js';
 import { serializeDelimitedRows } from './shared/tabular-io/index.js';
 
@@ -341,7 +342,7 @@ export function renderOntologyTable(container, ontologyMeta, tableModel) {
   exportBtn.addEventListener('click', () => {
     const rows = filterAndSortRows(tableModel, currentQuery, sortIndex, sortDirection);
     const csv = tableModelToCsv(tableModel, rows);
-    const baseName = toPascalCase(ontologyMeta.ontologyName || ontologyMeta.ontologyIri);
+    const baseName = normalizeStringToPascalCase(ontologyMeta.ontologyName || ontologyMeta.ontologyIri) || 'Ontology';
     const timestamp = new Date().toISOString().replace(/[:]/g, '-');
     const filename = `${baseName}_${timestamp}.csv`;
     downloadTextFile(filename, csv, { mimeType: 'text/csv' });
