@@ -97,23 +97,6 @@ export function detectRdfFormatFromFilename(filename) {
   }
 }
 
-/**
- * Check if a term from N3 is a blank node.
- * @param {import('n3').Term} term
- * @returns {boolean}
- */
-export function isBlankNode(term) {
-  const fnName = 'isBlankNode';
-  logEvent(fnName, 'start', { termType: term?.termType, value: term?.value });
-
-  try {
-    return isBlankNodeTerm(term);
-  } catch (err) {
-    logError(fnName, err, { term });
-    throw err;
-  }
-}
-
 async function getN3Library() {
   return typeof window !== 'undefined' && window.N3
     ? window.N3
@@ -433,7 +416,7 @@ export function getIriArrayForPredicates(store, subjectIri, predicateIris) {
         q.predicate.termType === 'NamedNode' &&
         predicateIris.includes(q.predicate.value) &&
         q.object.termType === 'NamedNode' &&
-        !isBlankNode(q.object)
+        !isBlankNodeTerm(q.object)
       ) {
         values.add(q.object.value);
       }
@@ -679,7 +662,7 @@ export function buildElementTableModel(store) {
     // collect NamedNode subjects (non-blank)
     const subjectTermMap = new Map(); // IRI -> Term
     allQuads.forEach(q => {
-      if (!isBlankNode(q.subject) && q.subject.termType === 'NamedNode') {
+      if (!isBlankNodeTerm(q.subject) && q.subject.termType === 'NamedNode') {
         subjectTermMap.set(q.subject.value, q.subject);
       }
     });
