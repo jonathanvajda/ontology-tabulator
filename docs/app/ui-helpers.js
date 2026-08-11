@@ -3,6 +3,11 @@ import { filterAndSortRows } from './core.js';
 import { normalizeStringToPascalCase } from './shared/normalization-utils/index.js';
 import { downloadTextFile } from './shared/browser-file-io/index.js';
 import { serializeDelimitedRows } from './shared/tabular-io/index.js';
+import {
+  createReportTextExportDescriptor,
+  openPrintableHtmlDocument,
+  serializeReportDocumentToHtml
+} from './shared/report-export/index.js';
 
 export function showLoadingOverlay() {
   const el = document.getElementById('loadingOverlay');
@@ -25,155 +30,6 @@ export function renderFileList(fileInfos) {
     li.textContent = `${info.displayName} (${info.quadCount} triples)`;
     ul.appendChild(li);
   });
-}
-
-export function printTableOnly(titleText, tableElement) {
-  if (!tableElement) return;
-
-  const printWindow = window.open('', '_blank', 'width=1200,height=800');
-  if (!printWindow) return;
-
-  const safeTitle = String(titleText || 'Ontology Table');
-
-  printWindow.document.open();
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <title>${safeTitle}</title>
-      <style>
-        @page {
-          size: landscape;
-          margin: 0.5in;
-        }
-
-        html, body {
-          margin: 0;
-          padding: 0;
-          font-family: Arial, sans-serif;
-          font-size: 10pt;
-          color: #000;
-        }
-
-        body {
-          padding: 0.35in;
-        }
-
-        h1 {
-          font-size: 14pt;
-          margin: 0 0 0.2in 0;
-        }
-
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          table-layout: fixed;
-        }
-
-        th, td {
-          border: 1px solid #000;
-          padding: 0.18in 0.08in;
-          text-align: left;
-          vertical-align: top;
-          white-space: normal;
-          word-break: normal;
-          overflow-wrap: break-word;
-          hyphens: auto;
-        }
-
-        th {
-          font-weight: 700;
-          background: #f2f2f2;
-        }
-
-        thead {
-          display: table-header-group;
-        }
-
-        tr, td, th {
-          page-break-inside: avoid;
-          break-inside: avoid;
-        }
-
-        /* Column tuning */
-        th[data-col-key="iri"],
-        td[data-col-key="iri"] {
-          width: 14%;
-          font-size: 9pt;
-          overflow-wrap: anywhere;
-        }
-
-        th[data-col-key="type"],
-        td[data-col-key="type"] {
-          width: 12%;
-          font-size: 9pt;
-          overflow-wrap: anywhere;
-        }
-
-        th[data-col-key="label"],
-        td[data-col-key="label"] {
-          width: 8%;
-        }
-
-        th[data-col-key="definition"],
-        td[data-col-key="definition"] {
-          width: 18%;
-        }
-
-        th[data-col-key="preferredLabel"],
-        td[data-col-key="preferredLabel"] {
-          width: 10%;
-        }
-
-        th[data-col-key="alternativeLabel"],
-        td[data-col-key="alternativeLabel"] {
-          width: 10%;
-        }
-
-        th[data-col-key="acronym"],
-        td[data-col-key="acronym"] {
-          width: 6%;
-        }
-
-        th[data-col-key="subClassOf"],
-        td[data-col-key="subClassOf"] {
-          width: 10%;
-          font-size: 9pt;
-          overflow-wrap: anywhere;
-        }
-
-        th[data-col-key="subPropertyOf"],
-        td[data-col-key="subPropertyOf"] {
-          width: 10%;
-          font-size: 9pt;
-          overflow-wrap: anywhere;
-        }
-
-        th[data-col-key="definitionSource"],
-        td[data-col-key="definitionSource"] {
-          width: 18%;
-        }
-
-        th[data-col-key="isCuratedIn"],
-        td[data-col-key="isCuratedIn"] {
-          width: 10%;
-          font-size: 9pt;
-          overflow-wrap: anywhere;
-        }
-      </style>
-    </head>
-    <body>
-      <h1>${safeTitle}</h1>
-      ${tableElement.outerHTML}
-    </body>
-    </html>
-  `);
-  printWindow.document.close();
-
-  printWindow.focus();
-  printWindow.print();
-  printWindow.close();
 }
 
 export function createLinkIfUri(value) {
@@ -343,16 +199,28 @@ export function renderOntologyTable(container, ontologyMeta, tableModel) {
     const rows = filterAndSortRows(tableModel, currentQuery, sortIndex, sortDirection);
     const csv = tableModelToCsv(tableModel, rows);
     const baseName = normalizeStringToPascalCase(ontologyMeta.ontologyName || ontologyMeta.ontologyIri) || 'Ontology';
-    const timestamp = new Date().toISOString().replace(/[:]/g, '-');
-    const filename = `${baseName}_${timestamp}.csv`;
-    downloadTextFile(filename, csv, { mimeType: 'text/csv' });
+    const descriptor = createReportTextExportDescriptor({
+      text: csv,
+      formatKey: 'csv',
+      baseFileName: baseName
+    });
+    downloadTextFile(descriptor.fileName, descriptor.text, { mimeType: descriptor.mimeType });
   });
 
   printBtn.addEventListener('click', () => {
-    printTableOnly(
-      ontologyMeta.ontologyName || ontologyMeta.ontologyIri || 'Ontology Elements',
-      table
-    );
+    const titleText = ontologyMeta.ontologyName || ontologyMeta.ontologyIri || 'Ontology Elements';
+    const rows = filterAndSortRows(tableModel, currentQuery, sortIndex, sortDirection);
+    const html = serializeReportDocumentToHtml({
+      title: titleText,
+      tables: [{
+        caption: titleText,
+        headers: tableModel.headers,
+        rows: rows.map((row) => tableModel.keys.map((key) => (key ? (row[key] ?? '') : '')))
+      }]
+    }, {
+      css: '@page{size:landscape;margin:0.5in;}th,td{border:1px solid #000;overflow-wrap:anywhere;}'
+    });
+    openPrintableHtmlDocument(html);
   });
 }
 
