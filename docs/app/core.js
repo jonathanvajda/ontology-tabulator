@@ -13,8 +13,10 @@ import {
   getSupportedMimeTypeForFilename
 } from './shared/format-registry/mime-registry.js';
 import { parseRdfTextWithAdapters } from './shared/rdf-io/index.js';
+import { createScopedConsoleLogger } from './shared/ui-feedback/index.js';
 
 const REGISTERED_PREFIXES = namespacePrefixMapFromRegistry();
+const coreLogger = createScopedConsoleLogger({ scope: 'ontology-tabulator' });
 
 /**
  * Simple event logger for core functions.
@@ -23,7 +25,7 @@ const REGISTERED_PREFIXES = namespacePrefixMapFromRegistry();
  * @param {object} [data]
  */
 export function logEvent(fnName, message, data) {
-  console.info(`[${fnName}] ${message}`, data ?? '');
+  coreLogger.info(`${fnName}.${message}`, data ?? '');
 }
 
 /**
@@ -33,7 +35,7 @@ export function logEvent(fnName, message, data) {
  * @param {object} [context]
  */
 export function logError(fnName, error, context) {
-  console.error(`[${fnName}] ERROR: ${error.message}`, { error, context });
+  coreLogger.error(`${fnName}.error`, { error, context });
 }
 
 /**
